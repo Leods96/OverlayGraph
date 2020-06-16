@@ -12,6 +12,12 @@ public class Point {
         this.longitude = longitude;
     }
 
+    public Point(Double latitude, Double longitude){
+        this.code = null;
+        this.latitude = latitude;
+        this.longitude = longitude;
+    }
+
     public Double getLatitude() {
         return latitude;
     }
@@ -22,6 +28,23 @@ public class Point {
 
     public String getCode() {
         return code;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Point p = (Point) o;
+        return this.latitude == p.getLatitude() && this.longitude == p.getLongitude() && this.code == p.getCode();
+    }
+
+    @Override
+    public String toString() {
+        return (code == null ? "" : " Code: " + code) + " Lat: " + latitude + " Lon: " + longitude;
     }
 
 }

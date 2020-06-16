@@ -94,7 +94,7 @@ public class MatrixOverlayGraphManager {
         }
     }
 
-    public void prinfGraph() {
+    public void printGraph() {
         System.out.println("Our Graph is: ");
         graph.print();
     }

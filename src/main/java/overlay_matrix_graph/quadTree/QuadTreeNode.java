@@ -7,28 +7,50 @@ import util.EuclideanDistance;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Is the implementation of a quadTree: a tree into which each node can have four children, each node can be a
+ * central node or a leaf and are distinguished by the boolean variable leaf.
+ * The leafs contain a list of points.
+ * The central nodes contain two arraylist: the first one identify the centroids and the second one the children
+ * nodes, the connection between children and centroid is done through the index: each son is relative to a
+ * specific centroid and the are at the same position into the arrays.
+ */
 public class QuadTreeNode {
     private static final int NUMBER_OF_CLUSTERS = 4;
+    private static final int MAX_NUM_PER_CLUSTER = 8;
+    /**
+     * Maximum number of layers into the tree, if negative means no limits
+     */
+    private static final int MAX_LAYERS = 0;
     private static final int K_MEANS_ITERATION = 100;
-    private ArrayList<Centroid> centroids; //Only for Node
+    private ArrayList<Point> centroids; //Only for Node
     private ArrayList<QuadTreeNode> sons; //Only for Node
     private List<Point> points; //Only for Leaf
     private boolean leaf;
 
     /**
-     * Given the List of Points create a quadTree
+     * Given the List of Points create a quadTree in a recursive mood
      * @param records List of points to be clustered
      */
     public QuadTreeNode(List<Point> records) {
-        if(records.size() < NUMBER_OF_CLUSTERS) {
+        if(records.size() < MAX_NUM_PER_CLUSTER) {
             createLeaf(records);
         } else {
-            createCentralNode(records);
+            createCentralNode(records, 0);
+        }
+    }
+
+    public QuadTreeNode(List<Point> records, int countLayers) {
+        if(records.size() < MAX_NUM_PER_CLUSTER ||(MAX_LAYERS >= 1 && countLayers >= MAX_LAYERS)) {
+            createLeaf(records);
+        } else {
+            createCentralNode(records, countLayers +1);
         }
     }
 
     /**
-     * Create a QuadTree Leaf
+     * Create a QuadTree Leaf.
+     * End point of the recursive construction.
      * @param records List of points into the final cluster
      */
     private void createLeaf(List<Point> records) {
@@ -37,10 +59,11 @@ public class QuadTreeNode {
     }
 
     /**
-     * Create a QuadTree Node
+     * Create a QuadTree Node and forward the creation to the sons.
+     * Performs the KMeans clusterization over the input points, each cluster will corresponds to a son.
      * @param records List of points to be clustered
      */
-    private void createCentralNode(List<Point> records) {
+    private void createCentralNode(List<Point> records, int countLayers) {
         this.leaf = false;
         this.centroids = new ArrayList<>();
         this.sons = new ArrayList<>();
@@ -48,7 +71,7 @@ public class QuadTreeNode {
                 new EuclideanDistance(), K_MEANS_ITERATION);
         clusterSet.getClusterSet().forEach((centroid,listOfPoints) -> {
             this.centroids.add(centroid);
-            this.sons.add(new QuadTreeNode(listOfPoints));
+            this.sons.add(new QuadTreeNode(listOfPoints, countLayers + 1));
         });
     }
 
@@ -103,4 +126,33 @@ public class QuadTreeNode {
         }
         return sons.get(bestCentroidIndex).searchNeighbour(point);
     }
+
+    @Override
+    public String toString() {
+        if(leaf)
+            return "leaf - points: " + points;
+        return "\nNode - centroids: " + centroids + sons;
+    }
+
+    public void printTree() {
+        printTree(0);
+    }
+
+    public void printTree(int step) {
+        if(leaf) {
+            System.out.print("\n");
+            for(int i = 0; i < step; i++)
+                System.out.print("\t");
+            System.out.print("Leaf - points: " + points);
+        } else {
+            for(int j = 0; j < centroids.size(); j++) {
+                System.out.print("\n");
+                for(int i = 0; i < step; i++)
+                    System.out.print("\t");
+                System.out.print("Centroid: " + centroids.get(j) + "Sons: " );
+                sons.get(j).printTree(step + 1);
+            }
+        }
+    }
+
 }

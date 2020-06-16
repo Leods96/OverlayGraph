@@ -32,6 +32,7 @@ public class OverlayResponse {
      */
     public OverlayResponse computeTimeFromHeversineDistance(double distance) {
         this.distance = distance;
+        //TODO check if this is ok
         this.time = distance/(SPEED * FROM_KMH_TO_MS_CONVERSION);
         return this;
     }

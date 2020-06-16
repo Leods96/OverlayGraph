@@ -20,7 +20,7 @@ public class ControllerGH {
     private ExternalCSVDump dumpManager;
     private ExternalConfigurationManager configurationManager;
     private ResponseManager rm;
-    private GH_Test gh;
+    private GHTest gh;
 
     public ControllerGH(){
         rm = new ResponseManager();
@@ -90,7 +90,7 @@ public class ControllerGH {
     }
 
     public void setup() throws CheckPointException {
-        gh = new GH_Test();
+        gh = new GHTest();
         gh.preprocessing();
         try {
             CheckPoint cp = configurationManager.getCheckPoint();

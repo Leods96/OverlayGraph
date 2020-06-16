@@ -96,8 +96,8 @@ public class MatrixOverlayGraph implements Serializable {
                 values().
                 stream().
                 map(Source::getNodeInfo).
-                filter(s -> s.getLongitude() == p.getLongitude() &&
-                        s.getLatitude() == p.getLatitude()).
+                filter(s -> s.getLongitude().equals(p.getLongitude()) &&
+                        s.getLatitude().equals(p.getLatitude())).
                 collect(Collectors.toList());
     }
 
