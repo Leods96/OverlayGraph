@@ -6,6 +6,7 @@ package clusterization;
 public class Centroid {
 
     private Double longitude;
+
     private Double latitude;
 
     public Centroid(double latitude, double longitude) {
