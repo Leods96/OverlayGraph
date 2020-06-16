@@ -9,6 +9,8 @@ public class Centroid {
 
     private Double latitude;
 
+    //TODO remove this useless comment, test on git
+
     public Centroid(double latitude, double longitude) {
         this.latitude = latitude;
         this.longitude = longitude;
