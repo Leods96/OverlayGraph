@@ -103,6 +103,8 @@ public class ControllerGH {
         }
     }
 
+    /* MAIN
+
     public static void main(String[] args) {
         ControllerGH c = new ControllerGH();
         try {
@@ -117,6 +119,6 @@ public class ControllerGH {
             e.printStackTrace();
         }
     }
-
+    */
 
 }

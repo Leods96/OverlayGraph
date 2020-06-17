@@ -30,6 +30,10 @@ public class Source implements Serializable {
         });
     }
 
+    public void setNodeInfo(Point nodeInfo) {
+        this.nodeInfo = nodeInfo;
+    }
+
     public Point getNodeInfo() {
         return nodeInfo;
     }

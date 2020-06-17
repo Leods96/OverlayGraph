@@ -4,6 +4,7 @@ import clusterization.*;
 import location_iq.Point;
 import util.EuclideanDistance;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,7 +16,7 @@ import java.util.List;
  * nodes, the connection between children and centroid is done through the index: each son is relative to a
  * specific centroid and the are at the same position into the arrays.
  */
-public class QuadTreeNode {
+public class QuadTreeNode implements Serializable {
     private static final int NUMBER_OF_CLUSTERS = 4;
     private static final int MAX_NUM_PER_CLUSTER = 8;
     /**

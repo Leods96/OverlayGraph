@@ -36,14 +36,22 @@ public class MatrixOverlayGraph implements Serializable {
         );
     }
 
+    public QuadTreeNode getSupporters() {
+        return this.quadTreeSupport;
+    }
+
+    public void setQuadTreeSupport(QuadTreeNode quadTreeSupport) {
+        this.quadTreeSupport = quadTreeSupport;
+    }
+
     /**
-     * If one or both of the points is part of the graph the reasearch will be simplified by the use of
+     * If one or both of the points is part of the graph the research will be simplified by the use of
      * the others route function
      * Compute the response as a combination of route: the vicinities of the graph plus
      * @param fromPoint Origin of the path
      * @param toPoint Destination of the path
-     * @return Ovarlay response with the data of the route
-     * @throws NodeCodeNotInOverlayGraphException reaised if it is impossible to find a point in the
+     * @return Overlay response with the data of the route
+     * @throws NodeCodeNotInOverlayGraphException raised if it is impossible to find a point in the
      * overlay graph
      */
     public OverlayResponse route(Point fromPoint, Point toPoint) throws NodeCodeNotInOverlayGraphException {

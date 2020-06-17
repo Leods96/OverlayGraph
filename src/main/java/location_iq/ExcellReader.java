@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.Random;
 
 public class ExcellReader {
     private String filename;
@@ -155,6 +156,12 @@ public class ExcellReader {
             workBook = new XSSFWorkbook(file);
             this.numSheet = workBook.getNumberOfSheets(); //Get number of sheets from the workbook
         }
+        return this;
+    }
+
+    public ExcellReader randomRow() {
+        int rowIndex = new Random().nextInt(this.workSheet.getLastRowNum());
+        rowOnWorking = workSheet.getRow(rowIndex);
         return this;
     }
 

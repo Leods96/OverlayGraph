@@ -2,6 +2,8 @@ package overlay_matrix_graph.quadTree;
 
 import junit.framework.TestCase;
 import location_iq.Point;
+import org.junit.Before;
+import org.junit.Test;
 import util.EuclideanDistance;
 import util.Util;
 
@@ -14,11 +16,13 @@ public class QuadTreeNodeTest extends TestCase {
     private static final List<Point> points = new ArrayList<>();
     private QuadTreeNode tree;
 
+    @Before
     public void treeCreation() {
         points.addAll(Util.GenerateRandomPoints(NUMBER_OF_POINTS));
         tree = new QuadTreeNode(points);
     }
 
+    @Test
     public void testTreeSearchCorrectnessAndTime() {
         treeCreation();
         tree.printTree();
