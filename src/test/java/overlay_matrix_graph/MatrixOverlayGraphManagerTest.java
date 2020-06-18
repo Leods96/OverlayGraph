@@ -50,7 +50,10 @@ public class MatrixOverlayGraphManagerTest extends TestCase {
         System.out.println("Origin: " + origin);
         System.out.println("Destination: " + destination);
         //Routing
+        double ghTime = System.nanoTime();
         PathWrapper ghResp = gh.routing(origin, destination);
+        ghTime = System.nanoTime() - ghTime;
+        double ogTime = System.nanoTime();
         OverlayResponse ogResp = null;
         try {
             ogResp = og.route(origin, destination);
@@ -58,12 +61,15 @@ public class MatrixOverlayGraphManagerTest extends TestCase {
             System.err.println("impossibile trovare il nodo nell'overlay graph");
             fail();
         }
+        ogTime = System.nanoTime() - ogTime;
         System.out.println("Graph Hopper result");
         System.out.println("Time: " + ghResp.getTime());
         System.out.println("Distance: " + ghResp.getDistance());
-        System.out.println("Overlay Graph result");
+        System.out.println("Computed in: " + ghTime);
+        System.out.println("\nOverlay Graph result");
         System.out.println("Time: " + ogResp.getTime());
         System.out.println("Distance: " + ogResp.getDistance());
+        System.out.println("Computed in: " + ogTime);
         assertTrue(true);
     }
 }

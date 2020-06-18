@@ -1,17 +1,20 @@
 package overlay_matrix_graph;
 
-import com.sun.org.apache.xalan.internal.lib.NodeInfo;
 import location_iq.ExcellReader;
 import location_iq.Exceptions.CellTypeException;
 import location_iq.ExternalCSVDump;
 import location_iq.Point;
-import org.omg.CORBA.Object;
 import overlay_matrix_graph.Exceptions.NodeCodeNotInOverlayGraphException;
 import overlay_matrix_graph.quadTree.QuadTreeNode;
 
 import java.io.*;
 import java.util.Map;
 
+/**
+ * This class works as an interface that interact with the real overlay graph, manages the creation or the
+ * load of the graph, in case of creation manages the dump of the distance.
+ * Manages the supporters and the route requests
+ */
 public class MatrixOverlayGraphManager {
     private static final String PATH = "C:\\Users\\leo\\Desktop\\ThesisProject1.0\\Addresses\\";
     private static final String DEPOT_CUSTOMER = "GHDumpFolder\\Depot-Customer\\";
