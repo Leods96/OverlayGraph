@@ -5,7 +5,9 @@ import location_iq.Exceptions.CellTypeException;
 import location_iq.ExternalCSVDump;
 import location_iq.Point;
 import overlay_matrix_graph.Exceptions.NodeCodeNotInOverlayGraphException;
+import overlay_matrix_graph.Exceptions.NodeNotInOverlayGraphException;
 import overlay_matrix_graph.quadTree.QuadTreeNode;
+import util.HeartDistance;
 
 import java.io.*;
 import java.util.Map;
@@ -40,6 +42,9 @@ public class MatrixOverlayGraphManager {
         //graph.print();
     }
 
+    /**
+     * This function parse a specific dump file with precomputed distnces and creates the OverlayGraph
+     */
     private void createGraph() {
         System.out.println("The graph will be created from scratch");
         graph = new MatrixOverlayGraph();
@@ -49,6 +54,10 @@ public class MatrixOverlayGraphManager {
         saveSupporters();
     }
 
+    /**
+     * Parse all the file at the specified path, use the name of the file as code for points
+     * @param path address of the directory with the dump files
+     */
     private void parse(String path) {
         dump = new ExternalCSVDump(path, true);
         File folder = new File(path);
@@ -87,6 +96,13 @@ public class MatrixOverlayGraphManager {
         }
     }
 
+    /**
+     * Parse the file untill the code will found and take the node's information: code, latitude
+     * and longitude
+     * @param code code to be finded into the file
+     * @return Point containing the information of the source of all the parsed routes
+     * @throws IOException if will be a problem reading the file
+     */
     private Point parseNodeInfo(String code) throws IOException {
         ExcellReader exr = new ExcellReader(PATH + POINTS_GEOCODE);
         exr.setSheetWithIndex(1).initializeIterator(); //TODO no be hardcoded
@@ -115,6 +131,9 @@ public class MatrixOverlayGraphManager {
         System.out.println("The Graph was successfully written to a file");
     }
 
+    /**
+     * Write the supporters into an external file
+     */
     private void saveSupporters() {
         try(FileOutputStream fileOut = new FileOutputStream(PATH + OVERLAY_GRAPH_QUADTREE);
             ObjectOutputStream objectOut = new ObjectOutputStream(fileOut))
@@ -142,6 +161,9 @@ public class MatrixOverlayGraphManager {
         loadSupporters();
     }
 
+    /**
+     * Read the supporters from the external file
+     */
     public void loadSupporters() {
         try(FileInputStream fis = new FileInputStream(PATH + OVERLAY_GRAPH_QUADTREE);
             ObjectInputStream ois = new ObjectInputStream(fis))
@@ -153,8 +175,64 @@ public class MatrixOverlayGraphManager {
         }
     }
 
-    public OverlayResponse route(Point fromPoint, Point toPoint) throws NodeCodeNotInOverlayGraphException{
-            return graph.route(fromPoint, toPoint);
+    /**
+     * If one or both of the points is part of the overlay graph the research will be simplified by the using
+     * only the graph's points
+     * Compute the response as a combination of route: the vicinities of the graph plus the precomputed
+     * distance over the overlay graph
+     * @param fromPoint origin of the route
+     * @param toPoint destination of the route
+     * @return An OverlayResponse with all the information of the route
+     * @throws NodeCodeNotInOverlayGraphException Exception raised if the graph will not contain the code of
+     * the selected node as part of the OverlayGraph
+     */
+    public OverlayResponse route(Point fromPoint, Point toPoint) throws NodeCodeNotInOverlayGraphException {
+        OverlayResponse response = new OverlayResponse(fromPoint, toPoint);
+        /**
+         * TODO check if we have to use the graph (if the points are near may we can use different approach
+         * as the haversine) in case use the method removeOverlayFromResponse()
+         * also if the neighbour is the same could be a problem both the the hashmap and for the result
+         */
+        try {
+            response.setOriginCode(graph.pointPresentIntoGraph(fromPoint).getCode());
+        } catch (NodeNotInOverlayGraphException e) {
+            response.setOriginNeighbour(graph.searchNeighbour(fromPoint));
+            response.setStartingStep();
+        }
+        try {
+            response.setDestinationCode(graph.pointPresentIntoGraph(toPoint).getCode());
+        } catch (NodeNotInOverlayGraphException e) {
+            response.setDestinationNeighbour(graph.searchNeighbour(toPoint));
+            response.setFinalStep();
+        }
+        return routeComposition(response);
+    }
+
+    public OverlayResponse routeComposition(OverlayResponse response) throws NodeCodeNotInOverlayGraphException {
+        if(response.getInitialPath()) {
+            response.computeTimeWithSpeedProfile(new HeartDistance().
+                    calculate(response.getOrigin(), response.getOriginNeighbour()));
+        }
+        if(response.getMiddlePath()) {
+            if(response.getInitialPath() && response.getFinalPath()) {
+                response.concat(graph.route(response.getOriginNeighbour().getCode(),
+                        response.getDestinationNeighbour().getCode()));
+            } else if (response.getInitialPath()){
+                response.concat(graph.route(response.getOriginNeighbour().getCode(),
+                        response.getDestination().getCode()));
+            } else if(response.getFinalPath()) {
+                response.concat(graph.route(response.getOrigin().getCode(),
+                        response.getDestinationNeighbour().getCode()));
+            } else {
+                response.concat(graph.route(response.getOrigin().getCode(),
+                        response.getDestination().getCode()));
+            }
+        }
+        if(response.getFinalPath()) {
+            response.computeTimeWithSpeedProfile(new HeartDistance().
+                    calculate(response.getDestinationNeighbour(), response.getDestination()));
+        }
+        return response;
     }
 
     public void printGraph() {

@@ -41,7 +41,7 @@ public class MatrixOverlayGraphManagerTest extends TestCase {
         repeat = false;
         do {
             try {
-                reader.setSheetWithIndex(0).initializeIterator().randomRow();
+                reader.setSheetWithIndex(1).initializeIterator().randomRow();
                 destination = new Point(reader.getID(), reader.getLatitude(), reader.getLongitude());
             } catch (CellTypeException e) {
                 repeat = true;

@@ -20,6 +20,10 @@ public class Point implements Serializable {
         this.longitude = longitude;
     }
 
+    public void setCode(String code) {
+        this.code = code;
+    }
+
     public Double getLatitude() {
         return latitude;
     }

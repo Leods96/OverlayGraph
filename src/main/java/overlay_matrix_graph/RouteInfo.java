@@ -19,8 +19,8 @@ public class RouteInfo implements Serializable {
         return time;
     }
 
-    public OverlayResponse getResponse() {
-        return new OverlayResponse(time, distance);
+    public RouteInfo getResponse() {
+        return this;
     }
 
 }

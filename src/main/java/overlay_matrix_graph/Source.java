@@ -60,7 +60,7 @@ public class Source implements Serializable {
      * @throws NodeCodeNotInOverlayGraphException This exception will be thrown if the code represented by the
      * param <toCode> is not present into the overlay graph
      */
-    public OverlayResponse route(String toCode) throws NodeCodeNotInOverlayGraphException {
+    public RouteInfo route(String toCode) throws NodeCodeNotInOverlayGraphException {
         try {
             return routes.get(toCode).getResponse();
         } catch (NullPointerException e) {
