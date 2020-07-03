@@ -22,7 +22,6 @@ public class HeartDistance implements Distance{
 
     /**
      * Calculates distance of (from, to) in meter.
-     * <p>
      * http://en.wikipedia.org/wiki/Haversine_formula a = sin²(Δlat/2) +
      * cos(lat1).cos(lat2).sin²(Δlong/2) c = 2.atan2(√a, √(1−a)) d = R.c
      */

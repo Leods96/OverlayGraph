@@ -100,8 +100,8 @@ public class OverlayResponse {
     /**
      * @return time in millisecond
      */
-    public int getTime() {
-        return (int) time.stream().mapToDouble(Double::doubleValue).sum();
+    public long getTime() {
+        return (long) time.stream().mapToDouble(Double::doubleValue).sum();
     }
 
     /**

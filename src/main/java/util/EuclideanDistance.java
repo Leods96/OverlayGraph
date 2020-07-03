@@ -4,6 +4,7 @@ import location_iq.Point;
 
 /**
  * Calculates the distance between two items using the Euclidean formula.
+ * This will not represents the real distance between points but only the geometrical distance
  */
 public class EuclideanDistance implements Distance {
 
