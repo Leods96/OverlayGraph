@@ -1,9 +1,9 @@
 package location_iq;
 
-import location_iq.Exceptions.BadResponseException;
-import location_iq.Exceptions.CellTypeException;
-import location_iq.Exceptions.CheckPointException;
-import location_iq.Exceptions.DayRequestFinishedException;
+import location_iq.exceptions.BadResponseException;
+import location_iq.exceptions.CellTypeException;
+import location_iq.exceptions.CheckPointException;
+import location_iq.exceptions.DayRequestFinishedException;
 import org.json.JSONObject;
 
 import java.io.EOFException;

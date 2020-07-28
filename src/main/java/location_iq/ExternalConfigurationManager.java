@@ -1,6 +1,6 @@
 package location_iq;
 
-import location_iq.Exceptions.CheckPointException;
+import location_iq.exceptions.CheckPointException;
 
 import java.io.*;
 import java.util.ArrayList;

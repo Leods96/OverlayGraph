@@ -1,13 +1,12 @@
 package location_iq;
 
-import location_iq.Exceptions.BadResponseException;
-import location_iq.Exceptions.DayRequestFinishedException;
+import location_iq.exceptions.BadResponseException;
+import location_iq.exceptions.DayRequestFinishedException;
 import org.json.JSONObject;
 import javax.net.ssl.HttpsURLConnection;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.List;
 

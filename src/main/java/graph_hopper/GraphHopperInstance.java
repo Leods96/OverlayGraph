@@ -7,7 +7,7 @@ import com.graphhopper.PathWrapper;
 import com.graphhopper.routing.util.EncodingManager;
 import location_iq.Point;
 
-public class GHTest {
+public class GraphHopperInstance {
 
     private static final String OSM_FILE = "C:\\Users\\leo\\Desktop\\Stage\\OSM\\italy.osm.pbf";
     private static final String WORK_DIR = "C:\\Users\\leo\\Desktop\\ThesisProject1.0\\Graph";

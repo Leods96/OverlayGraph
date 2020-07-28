@@ -1,9 +1,9 @@
-package location_iq.Exceptions;
+package location_iq.exceptions;
 
 public class BadResponseException extends Exception {
 
     private int code;
-    private String responseMessage;
+
     public BadResponseException(String message, int code){
         super(message);
         this.code = code;

@@ -1,15 +1,14 @@
 package overlay_matrix_graph;
 
-import location_iq.ExcellReader;
-import location_iq.Exceptions.CellTypeException;
 import location_iq.ExternalCSVDump;
 import location_iq.Point;
-import overlay_matrix_graph.Exceptions.NodeCodeNotInOverlayGraphException;
-import overlay_matrix_graph.Exceptions.NodeNotInOverlayGraphException;
+import overlay_matrix_graph.exceptions.NodeCodeNotInOverlayGraphException;
+import overlay_matrix_graph.exceptions.NodeNotInOverlayGraphException;
 import overlay_matrix_graph.quadTree.QuadTreeNode;
 import util.HeartDistance;
 
 import java.io.*;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -18,22 +17,61 @@ import java.util.Map;
  * Manages the supporters and the route requests
  */
 public class MatrixOverlayGraphManager {
-    private static final String PATH = "C:\\Users\\leo\\Desktop\\ThesisProject1.0\\Addresses\\";
-    private static final String DEPOT_CUSTOMER = "GHDumpFolder\\Depot-Customer\\";
-    private static final String DEPOT_DEPOT = "GHDumpFolder\\Depot-depot\\";
     private static final String OVERLAY_GRAPH = "OverlayGraph\\OverlayGraph";
     private static final String OVERLAY_GRAPH_QUADTREE = "OverlayGraph\\QuadTree";
     private static final String POINTS_GEOCODE = "geocodedAddresses.xlsx";
 
     private MatrixOverlayGraph graph;
     private ExternalCSVDump dump;
+    /**
+     * The path where save and read the graph
+     */
+    private String graphPath = null;
+    /**
+     * The files from which create the graph
+     */
+    private String dumpPath = null;
+
+    /**
+     * set the directory of the graph both to read and write it
+     * @param graphPath
+     */
+    public void setGraphPath(String graphPath) {
+        this.graphPath = graphPath;
+        if(graphPath == null)
+            System.err.println("Null path");
+        else {
+            File dir = new File(graphPath + "OverlayGraph");
+            if(!dir.exists()) {
+                dir.mkdir();
+                System.out.println("Directory to save the graph created");
+            }
+        }
+    }
+
+    /**
+     * set the path of the dumps file from which read the nodes and create the graph
+     * @param dumpPath
+     */
+    public void setDumpsDirectoryToCreateGraph(String dumpPath) {
+        this.dumpPath = dumpPath;
+    }
+
+    /**
+     * Set the path and call loadOrCreateGraph
+     */
+    public void loadOrCreateGraph(String graphPath, String dumpPath) {
+        setGraphPath(graphPath);
+        setDumpsDirectoryToCreateGraph(dumpPath);
+        loadOrCreateGraph();
+    }
 
     /**
      * If a file with the graph exists this will be loaded, otherwise the graph will be created
      * parsing the dump file and then will be written
      */
     public void loadOrCreateGraph() {
-        if(new File(PATH+OVERLAY_GRAPH).exists())
+        if(new File(graphPath + OVERLAY_GRAPH).exists())
             loadGraph();
         else {
             System.out.println("No file with the graph exists");
@@ -43,12 +81,12 @@ public class MatrixOverlayGraphManager {
     }
 
     /**
-     * This function parse a specific dump file with precomputed distnces and creates the OverlayGraph
+     * Function that parse a specific dump file with precomputed distances and creates the OverlayGraph
      */
-    private void createGraph() {
+    public void createGraph() {
         System.out.println("The graph will be created from scratch");
         graph = new MatrixOverlayGraph();
-        parse(PATH + DEPOT_DEPOT);
+        parse(dumpPath);
         saveGraph();
         graph.createSupporters();
         saveSupporters();
@@ -80,77 +118,68 @@ public class MatrixOverlayGraphManager {
      */
     private void parseDump(String dumpName) throws IOException {
         dump.createParserFile(dumpName);
-        String code = dumpName.replace(".csv","");
+        System.out.println("Processing the file: " +  dumpName);
         Source source = new Source();
+        source.setNodeInfo(parseNodeInfo());
+        String code = source.getNodeInfo().getCode();
         Map response = dump.parseNext();
         while (response != null) {
             source.addNewPath(response);
             response = dump.parseNext();
         }
-        try {
-            source.setNodeInfo(parseNodeInfo(code));
+        if(source.isRoutesEmpty())
+            System.err.println("Node " + code + " has no routes, discarded from the graph");
+        else
             graph.put(code,source);
-        } catch (IOException e) {
-            System.out.println("The point " + code + " has not be put into the graph for this error: ");
-            e.printStackTrace();
-        }
     }
 
     /**
-     * Parse the file untill the code will found and take the node's information: code, latitude
+     * Parse the file until the code will found and take the node's information: code, latitude
      * and longitude
-     * @param code code to be finded into the file
      * @return Point containing the information of the source of all the parsed routes
-     * @throws IOException if will be a problem reading the file
      */
-    private Point parseNodeInfo(String code) throws IOException {
-        ExcellReader exr = new ExcellReader(PATH + POINTS_GEOCODE);
-        exr.setSheetWithIndex(1).initializeIterator(); //TODO no be hardcoded
-        while(exr.nextRow()) {
-            try {
-                if(exr.getID().equalsIgnoreCase(code))
-                    return new Point(code, exr.getLatitude(), exr.getLongitude());
-            } catch(CellTypeException e) {
-                System.err.println("Exception reading " + code + "'s data");
-            }
-        }
-        throw new IOException(code + "'s data not founded");
+    private Point parseNodeInfo() {
+        HashMap<String, Object> m = new HashMap<>(dump.parseSourceInfo());
+        return new Point((String) m.get("code"),
+                Double.parseDouble((String)m.get("Latitude")), Double.parseDouble((String)m.get("Longitude")));
     }
 
     /**
      * Write the graph into an external file
      */
     private void saveGraph() {
-        try(FileOutputStream fileOut = new FileOutputStream(PATH + OVERLAY_GRAPH);
+        try(FileOutputStream fileOut = new FileOutputStream(graphPath + OVERLAY_GRAPH);
             ObjectOutputStream objectOut = new ObjectOutputStream(fileOut))
         {
             objectOut.writeObject(graph);
+            System.out.println("The Graph was successfully written to a file");
         } catch (Exception ex) {
+            System.out.println("Error writing the graph");
             ex.printStackTrace();
         }
-        System.out.println("The Graph was successfully written to a file");
     }
 
     /**
      * Write the supporters into an external file
      */
     private void saveSupporters() {
-        try(FileOutputStream fileOut = new FileOutputStream(PATH + OVERLAY_GRAPH_QUADTREE);
+        try(FileOutputStream fileOut = new FileOutputStream(graphPath + OVERLAY_GRAPH_QUADTREE);
             ObjectOutputStream objectOut = new ObjectOutputStream(fileOut))
         {
             objectOut.writeObject(graph.getSupporters());
+            System.out.println("Graph's supporters were successfully written to a file");
         } catch (Exception ex) {
+            System.out.println("Error writing the graph's supporters");
             ex.printStackTrace();
         }
-        System.out.println("Graph's supporters were successfully written to a file");
     }
 
     /**
      * Read the graph from the external file
      */
-    private void loadGraph() {
+    public void loadGraph() {
         System.out.println("The Graph will be loaded from an external file");
-        try(FileInputStream fis = new FileInputStream(PATH + OVERLAY_GRAPH);
+        try(FileInputStream fis = new FileInputStream(graphPath + OVERLAY_GRAPH);
             ObjectInputStream ois = new ObjectInputStream(fis))
         {
             graph = (MatrixOverlayGraph) ois.readObject();
@@ -165,7 +194,7 @@ public class MatrixOverlayGraphManager {
      * Read the supporters from the external file
      */
     public void loadSupporters() {
-        try(FileInputStream fis = new FileInputStream(PATH + OVERLAY_GRAPH_QUADTREE);
+        try(FileInputStream fis = new FileInputStream(graphPath + OVERLAY_GRAPH_QUADTREE);
             ObjectInputStream ois = new ObjectInputStream(fis))
         {
             graph.setQuadTreeSupport((QuadTreeNode) ois.readObject());
@@ -191,7 +220,7 @@ public class MatrixOverlayGraphManager {
         /**
          * TODO check if we have to use the graph (if the points are near may we can use different approach
          * as the haversine) in case use the method removeOverlayFromResponse()
-         * also if the neighbour is the same could be a problem both the the hashmap and for the result
+         * also if the neighbour is the same could be a problem both for the hashmap and for the result
          */
         try {
             response.setOriginCode(graph.pointPresentIntoGraph(fromPoint).getCode());
@@ -209,8 +238,14 @@ public class MatrixOverlayGraphManager {
     }
 
     public OverlayResponse routeComposition(OverlayResponse response) throws NodeCodeNotInOverlayGraphException {
+        HeartDistance distCalculator = new HeartDistance();
+        if(response.getOriginNeighbour() == response.getDestinationNeighbour()) {
+            response.computeTimeWithSpeedProfile(distCalculator.
+                    calculate(response.getOrigin(),response.getDestination()));
+            return response;
+        }
         if(response.getInitialPath()) {
-            response.computeTimeWithSpeedProfile(new HeartDistance().
+            response.computeTimeWithSpeedProfile(distCalculator.
                     calculate(response.getOrigin(), response.getOriginNeighbour()));
         }
         if(response.getMiddlePath()) {
@@ -229,7 +264,7 @@ public class MatrixOverlayGraphManager {
             }
         }
         if(response.getFinalPath()) {
-            response.computeTimeWithSpeedProfile(new HeartDistance().
+            response.computeTimeWithSpeedProfile(distCalculator.
                     calculate(response.getDestinationNeighbour(), response.getDestination()));
         }
         return response;

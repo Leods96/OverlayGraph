@@ -19,6 +19,9 @@ public class ExternalCSVDump extends ExternalDumpManager {
     private boolean usingGH;
     private ArrayList<String[]> csvFileObject = null;
     private Iterator<CSVRecord> records = null;
+    private boolean sourceDataParsed = false;
+    private boolean sourceDataWritten = false;
+    private String[] sourceInfo;
 
     public ExternalCSVDump (String path, boolean gh){
         super(path);
@@ -39,12 +42,24 @@ public class ExternalCSVDump extends ExternalDumpManager {
                 printer = new CSVPrinter(out, CSVFormat.DEFAULT.withHeader(HEADERS));
             else
                 printer = new CSVPrinter(out, CSVFormat.DEFAULT);
+            if(sourceDataWritten) //write the source data in the first line
+                printer.printRecord(sourceInfo);
             for (String[] elem : csvFileObject)
                 printer.printRecord(elem);
         } finally {
             printer.close();
+            sourceDataWritten = false;
         }
         csvFileObject.clear();
+        return this;
+    }
+
+    public ExternalDumpManager saveSourceInfo(String code, String latitude, String longitude) {
+        sourceInfo = new String[3];
+        sourceInfo[0] = code;
+        sourceInfo[1] = latitude;
+        sourceInfo[2] = longitude;
+        sourceDataWritten = true;
         return this;
     }
 
@@ -79,20 +94,40 @@ public class ExternalCSVDump extends ExternalDumpManager {
                 .withFirstRecordAsHeader()
                 .parse(in)
                 .iterator();
+        this.sourceDataParsed = false;
         return this;
+    }
+
+    public Map<String, Object> parseSourceInfo() {
+        if(records.hasNext() && !sourceDataParsed){
+            sourceDataParsed = true; //2 means that the info are read
+            HashMap<String, Object> m = new HashMap<>();
+            CSVRecord record = records.next();
+            m.put("code", record.get(0));
+            m.put("Latitude", record.get(1));
+            m.put("Longitude", record.get(2));
+            return m;
+        }
+        return null;
     }
 
     public Map parseNext() {
         if(records.hasNext()){
-            CSVRecord record = records.next();
+            CSVRecord record;
+            if (!sourceDataParsed) {
+                //if the first line containing the source info is not parsed this line will be skipped
+                record = records.next();
+                sourceDataParsed = true;
+            }
+            record = records.next();
             Map m = new HashMap();
-            if("Failed request".equalsIgnoreCase(record.get(1))) {
-                m.put("code","Failed request");
+            if ("Failed request".equalsIgnoreCase(record.get(1))) {
+                m.put("code", "Failed request");
             } else {
-                m.put("code",record.get(0));
-                m.put("time",record.get(1));
-                m.put("distance",record.get(2));
-                m.put("route",record.get(3));
+                m.put("code", record.get(0));
+                m.put("time", record.get(1));
+                m.put("distance", record.get(2));
+                m.put("route", record.get(3));
             }
             return m;
         }

@@ -6,9 +6,15 @@ import static java.lang.Math.*;
 
 public class HeartDistance implements Distance{
     /**
-     * mean radius of the earth
+     * mean radius of the earth in meters
      */
     public static final double R = 6371000; // m
+
+    /**
+     * mean radius of earth in km
+     */
+    public static final double R_KM = 6371.0088; //km
+
     /**
      * Radius of the earth at equator
      */
@@ -40,6 +46,5 @@ public class HeartDistance implements Distance{
         return sinDeltaLat * sinDeltaLat
                 + sinDeltaLon * sinDeltaLon * cos(toRadians(fromLat)) * cos(toRadians(toLat));
     }
-
 
 }

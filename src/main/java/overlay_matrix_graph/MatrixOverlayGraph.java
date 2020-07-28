@@ -1,8 +1,8 @@
 package overlay_matrix_graph;
 
 import location_iq.Point;
-import overlay_matrix_graph.Exceptions.NodeCodeNotInOverlayGraphException;
-import overlay_matrix_graph.Exceptions.NodeNotInOverlayGraphException;
+import overlay_matrix_graph.exceptions.NodeCodeNotInOverlayGraphException;
+import overlay_matrix_graph.exceptions.NodeNotInOverlayGraphException;
 import overlay_matrix_graph.quadTree.QuadTreeNode;
 
 import java.io.Serializable;

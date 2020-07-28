@@ -1,7 +1,7 @@
 package location_iq;
 
-import location_iq.Exceptions.CellTypeException;
-import location_iq.Exceptions.CheckPointException;
+import location_iq.exceptions.CellTypeException;
+import location_iq.exceptions.CheckPointException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -21,6 +21,10 @@ public class ExcellReader {
     private Iterator<Row> rowIterator;
     private Row rowOnWorking;
     private boolean finished = false;
+
+    public XSSFSheet getWorkSheet(){
+        return this.workSheet;
+    }
 
     public ExcellReader(String fileName) throws IOException{
         openFile(fileName);

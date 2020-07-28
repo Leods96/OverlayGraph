@@ -1,12 +1,12 @@
 package overlay_matrix_graph;
 
 import com.graphhopper.PathWrapper;
-import graph_hopper.GHTest;
+import graph_hopper.GraphHopperInstance;
 import junit.framework.TestCase;
 import location_iq.ExcellReader;
-import location_iq.Exceptions.CellTypeException;
+import location_iq.exceptions.CellTypeException;
 import location_iq.Point;
-import overlay_matrix_graph.Exceptions.NodeCodeNotInOverlayGraphException;
+import overlay_matrix_graph.exceptions.NodeCodeNotInOverlayGraphException;
 
 import java.io.IOException;
 
@@ -18,7 +18,7 @@ public class MatrixOverlayGraphManagerTest extends TestCase {
         //Creation of the two graphs (Overlay and GraphHopper)
         MatrixOverlayGraphManager og = new MatrixOverlayGraphManager();
         og.loadOrCreateGraph();
-        GHTest gh = new GHTest();
+        GraphHopperInstance gh = new GraphHopperInstance();
         gh.preprocessing();
         //Read a random pair (origin, destination)
         ExcellReader reader = null;

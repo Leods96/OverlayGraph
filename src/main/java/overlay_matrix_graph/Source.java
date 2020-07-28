@@ -1,7 +1,7 @@
 package overlay_matrix_graph;
 
 import location_iq.Point;
-import overlay_matrix_graph.Exceptions.NodeCodeNotInOverlayGraphException;
+import overlay_matrix_graph.exceptions.NodeCodeNotInOverlayGraphException;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -67,5 +67,9 @@ public class Source implements Serializable {
             throw new NodeCodeNotInOverlayGraphException("The node " + toCode +
                     " is not present in the Overlay Graph, impossible to route");
         }
+    }
+
+    public boolean isRoutesEmpty() {
+        return routes.isEmpty();
     }
 }
