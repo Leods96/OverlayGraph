@@ -60,8 +60,8 @@ public class ControllerGH {
         }
     }
 
-    private void process() throws IOException{
-        CheckPoint cp;
+    private void process() throws IOException {
+        CheckPoint cp = null;
         long time;
         Point from;
         while (fromReader.nextRow()) {
@@ -76,8 +76,14 @@ public class ControllerGH {
             }
             dumpManager.saveSourceInfo(from.getCode(), from.getLatitude().toString(), from.getLongitude().toString());
             dumpManager.writeDump();
+            try {
+                configurationManager.createCheckPoint(cp.getFrom(), cp.getTo());
+            } catch (Exception e) {
+                System.err.println("Check Point file not created for exception");
+                e.printStackTrace();
+            }
             toReader.initializeIterator();
-            System.out.println("This Depot is completed in: " + (System.nanoTime()-time)/1000000000 + " seconds");
+            System.out.println("This nodes is completed in: " + (System.nanoTime()-time)/1000000000 + " seconds");
         }
     }
 
@@ -91,7 +97,6 @@ public class ControllerGH {
         try {
             fromID = fromReader.getID();
             toID = toReader.getID();
-            System.out.println("From: " + fromID + " to: " + toID);
             PathWrapper response = gh.routing(new double[]{fromReader.getLatitude(), fromReader.getLongitude()},
                     new double[]{toReader.getLatitude(), toReader.getLongitude()});
             dumpManager.saveDataForGH(rm.filterResponse(response).toMap(), toID);

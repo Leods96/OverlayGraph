@@ -21,10 +21,11 @@ public class GraphHopperInstance {
     public void preprocessing() {
         graphHopper = new GraphHopper().setGraphHopperLocation(WORK_DIR) // "gh-car"
                 .setEncodingManager(new EncodingManager(VEHICLE)) // "car"
-                .setOSMFile(OSM_FILE) // "germany-lastest.osm.pbf"
+                .setOSMFile(OSM_FILE)
                 .forServer();
-        System.out.println("Creation or Load of the graph..");
+        System.out.println("Creation or Load of the graph hopper graph..");
         graphHopper.importOrLoad();
+        System.out.println("graph hopper ready");
     }
 
     /**

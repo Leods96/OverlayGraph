@@ -8,6 +8,7 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.junit.Test;
 import util.HeartDistance;
 
 import java.io.File;
@@ -26,6 +27,7 @@ public class HaversineAnalyzerTest extends TestCase {
     //private static final String PATH_TO_READ = "C:\\Users\\leo\\Desktop\\ThesisProject1.0\\Addresses\\"+ NAME + ".xlsx";
     //private static final String PATH_TO_WRITE = "C:\\Users\\leo\\Desktop\\ThesisProject1.0\\Addresses\\"+ NAME + "Haversine_Result.xlsx";
 
+    @Test
     public void testDifferencesBetweenHaversineAndGH() {
         ArrayList<Object[]> result = new ArrayList<>();
         ArrayList<Object[]> resultInternal = new ArrayList<>();

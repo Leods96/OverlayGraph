@@ -45,7 +45,11 @@ public class Point implements Serializable {
             return false;
         }
         Point p = (Point) o;
-        return this.latitude == p.getLatitude() && this.longitude == p.getLongitude() && this.code == p.getCode();
+        return this.latitude.equals(p.getLatitude()) && this.longitude.equals(p.getLongitude()) && this.code.equals(p.getCode());
+    }
+
+    public boolean sameCoordinates(Point p) {
+        return this.latitude.equals(p.getLatitude()) && this.longitude.equals(p.getLongitude());
     }
 
     @Override

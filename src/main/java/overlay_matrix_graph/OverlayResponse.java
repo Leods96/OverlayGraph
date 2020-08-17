@@ -3,14 +3,16 @@ package overlay_matrix_graph;
 import location_iq.Point;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class OverlayResponse {
     //Speed profile to compute the time in km/h
+    //TODO work on speed profile
     private static final int SPEED = 35;
     private static final double FROM_KMH_TO_MS_CONVERSION = 0.277778;
 
     private ArrayList<Double> time = new ArrayList<>();
-    private ArrayList<Double> distance = new ArrayList<>();
+    private final ArrayList<Double> distance = new ArrayList<>();
     private Point origin;
     private Point destination;
     private Point originNeighbour;
@@ -97,10 +99,22 @@ public class OverlayResponse {
         return destination;
     }
 
+    public List<Double> getDistanceList() {
+        return distance;
+    }
+
+    public List<Double> getTimeList() {
+        return time;
+    }
+
+    //TODO check the speed profile use
     /**
      * @return time in millisecond
      */
     public long getTime() {
+        if(time.isEmpty())
+            //l'if check se time è riempito, ora pero' viene sempre riempito per settare la distanza-> andrebbe cambiato
+            distance.forEach(d -> this.time.add((d / (SPEED * FROM_KMH_TO_MS_CONVERSION) * 1000)));
         return (long) time.stream().mapToDouble(Double::doubleValue).sum();
     }
 
@@ -111,6 +125,7 @@ public class OverlayResponse {
         return distance.stream().mapToDouble(Double::doubleValue).sum();
     }
 
+    //TODO this could have no sense, maybe is better to compute te time only if getTime is called
     /**
      * Set the distance and compute the time with respect to a speed profile
      * @return OverlayResponse object
@@ -124,11 +139,25 @@ public class OverlayResponse {
     }
 
     /**
-     * Join of two response object
+     * Join of RouteInfo of the overla graph with the response
      */
     public OverlayResponse concat(RouteInfo ri) {
         this.time.add(ri.getTime());
         this.distance.add(ri.getDistance());
         return this;
+    }
+
+    public void printResponse() {
+        System.out.println("Origin node: " + origin);
+        System.out.println("Destination node: " + destination);
+        System.out.println("OriginNeighbour node: " + originNeighbour);
+        System.out.println("DestinationNeighbour node: " + destinationNeighbour);
+
+        if(initialPath)
+            System.out.println("Initial path = From origin to " + originNeighbour + " : " + distance.get(0));
+        if(middlePath)
+            System.out.println("Middle path = From " + originNeighbour + " to " + destinationNeighbour + " : " + distance.get(1));
+        if(finalPath)
+            System.out.println("Final path = From " + destinationNeighbour + " to Destination" + " : " + distance.get(2));
     }
 }

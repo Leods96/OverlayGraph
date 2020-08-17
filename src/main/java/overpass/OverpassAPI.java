@@ -15,7 +15,7 @@ import java.nio.charset.StandardCharsets;
 
 public class OverpassAPI {
     private static final String BASE_URL = "http://overpass-api.de/api/interpreter?data=";
-    boolean filterResponse = false;
+    private boolean filterResponse = false;
 
     public JSONObject request(String query, boolean filterResponse) throws IOException, BadResponseException {
         this.filterResponse = filterResponse;
@@ -26,6 +26,7 @@ public class OverpassAPI {
     private JSONObject performHttpRequest(URL url) throws IOException, BadResponseException {
         System.out.println(url);
         HttpURLConnection connection = null;
+        System.out.println("Performing the request..");
         try {
             connection = (HttpURLConnection) url.openConnection();
             connection.setConnectTimeout(0);
@@ -38,6 +39,7 @@ public class OverpassAPI {
     }
 
     private JSONObject getResponse(HttpURLConnection connection) throws BadResponseException ,IOException {
+        System.out.println("Get response..");
         int responseCode = connection.getResponseCode();
         if(responseCode == 200) {
             BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream()));

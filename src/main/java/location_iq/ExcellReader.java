@@ -26,7 +26,7 @@ public class ExcellReader {
         return this.workSheet;
     }
 
-    public ExcellReader(String fileName) throws IOException{
+    public ExcellReader(String fileName) throws IOException {
         openFile(fileName);
     }
 
@@ -81,6 +81,12 @@ public class ExcellReader {
 
     public int getRowNumber(){
         return rowOnWorking.getRowNum();
+    }
+
+    public int getNumberOfRowsInSheet() {
+        if (workSheet != null)
+            return this.workSheet.getLastRowNum();
+        return 0;
     }
 
     public String getID() throws CellTypeException{
@@ -152,7 +158,7 @@ public class ExcellReader {
         return this;
     }
 
-    private ExcellReader openFile(String fileName) throws IOException{
+    private ExcellReader openFile(String fileName) throws IOException {
         try (
                 FileInputStream file = new FileInputStream(new File(fileName))
         )

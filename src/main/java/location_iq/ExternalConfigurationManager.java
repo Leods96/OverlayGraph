@@ -17,12 +17,12 @@ public class ExternalConfigurationManager {
 
 
     public ExternalConfigurationManager(String path) throws FileNotFoundException {
-        tokenFile = new File(path + TOKEN_FILE_NAME);
-        scannerToken = new Scanner(tokenFile);
+        //tokenFile = new File(path + TOKEN_FILE_NAME);
+        //scannerToken = new Scanner(tokenFile);
         this.path = path;
     }
 
-    public String readToken() throws EOFException{
+    public String readToken() throws EOFException {
         if(scannerToken.hasNextLine())
             return scannerToken.nextLine();
         throw new EOFException();
@@ -60,11 +60,12 @@ public class ExternalConfigurationManager {
     public void createCheckPoint(String from, String to) throws IOException {
         if(checkPointFile == null)
             this.checkPointFile = new File(path + CHECKPOINT_FILE_NAME);
-        FileWriter fw = new FileWriter(checkPointFile);
-        PrintWriter printWriter = new PrintWriter(fw);
-        printWriter.println("from-"+from);
-        printWriter.println("to-"+to);
-        printWriter.close();
-        fw.close();
+        try(
+                FileWriter fw = new FileWriter(checkPointFile);
+                PrintWriter printWriter = new PrintWriter(fw)
+        ) {
+            printWriter.println("from-" + from);
+            printWriter.println("to-" + to);
+        }
     }
 }

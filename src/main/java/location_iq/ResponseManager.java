@@ -46,7 +46,7 @@ public class ResponseManager {
         JSONObject response = new JSONObject();
         response.put("time", object.getTime());
         response.put("distance", object.getDistance());
-        JSONArray routes = new JSONArray();
+        /*JSONArray routes = new JSONArray();
         JSONObject point;
         for(Instruction i : object.getInstructions()) {
             point = new JSONObject();
@@ -55,7 +55,7 @@ public class ResponseManager {
             point.put("lon",i.getPoints().getLongitude(0));
             routes.put(point);
         }
-        response.put("routes",routes);
+        response.put("routes",routes); */
         return response;
     }
 

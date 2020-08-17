@@ -1,11 +1,13 @@
-package overlay_matrix_graph.quadTree;
+package overlay_matrix_graph.supporters;
 
 import clusterization.*;
 import location_iq.Point;
 import util.EuclideanDistance;
+import util.HeartDistance;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -22,11 +24,11 @@ public class QuadTreeNode implements Serializable {
     /**
      * Maximum number of layers into the tree, if negative means no limits
      */
-    private static final int MAX_LAYERS = 0;
+    private static final int MAX_LAYERS = 4;
     private static final int K_MEANS_ITERATION = 100;
     private ArrayList<Point> centroids; //Only for Node
     private ArrayList<QuadTreeNode> sons; //Only for Node
-    private List<Point> points; //Only for Leaf
+    private ArrayList<Point> points; //Only for Leaf
     private boolean leaf;
 
     /**
@@ -56,7 +58,7 @@ public class QuadTreeNode implements Serializable {
      */
     private void createLeaf(List<Point> records) {
         this.leaf = true;
-        this.points = records;
+        this.points = new ArrayList<>(records);
     }
 
     /**
@@ -81,7 +83,7 @@ public class QuadTreeNode implements Serializable {
      * @param point Point on which execute the research
      * @return The node in the graph nearest to point
      */
-    public Point searchNeighbour(Point point) {
+    public List<Point> searchNeighbour(Point point) {
         if(leaf)
             return searchNeighbourIntoLeaf(point);
         else
@@ -91,22 +93,33 @@ public class QuadTreeNode implements Serializable {
     /**
      * Final step of the recursive research
      * Calculate the distance with all the node in the cluster (Max NUMBER_OF_CLUSTERS node)
-     * and return the nearest with respect to Euclidean Distance
+     * and return the nearest with respect to Haversine Distance
      * @param point Point on which execute the research
      * @return The node in the graph nearest to point
      */
-    private Point searchNeighbourIntoLeaf(Point point) {
+ /*   private Point searchNeighbourIntoLeaf(Point point) {
         double minDistance = Double.MAX_VALUE;
+        HeartDistance distanceCalculator = new HeartDistance();
         Point neigbour = null;
+        Comparator<Point> comp = (a, b) -> (new Double(distanceCalculator.calculate(point,a)).
+                compareTo(new Double(distanceCalculator.calculate(point,b))));
         for(Point p : points){
-            double temp = new EuclideanDistance().calculate(point,p);
+            double temp = distanceCalculator.calculate(point,p);
             if(minDistance > temp) {
                 neigbour = p;
                 minDistance = temp;
             }
         }
         return neigbour;
+    }*/
+
+    private List<Point> searchNeighbourIntoLeaf(Point point) {
+        HeartDistance distanceCalculator = new HeartDistance();
+        Comparator<Point> comp = Comparator.comparingDouble(a -> distanceCalculator.calculate(point, a));
+        points.sort(comp);
+        return points;
     }
+
 
     /**
      * Intermediate step of the recursive research
@@ -115,7 +128,7 @@ public class QuadTreeNode implements Serializable {
      * @param point Point on which execute the research
      * @return The node in the graph nearest to point
      */
-    private Point searchNeighbourIntoNode(Point point) {
+    private List<Point> searchNeighbourIntoNode(Point point) {
         int bestCentroidIndex = 0;
         double minDistance = Double.MAX_VALUE;
         for(int i = 0; i < centroids.size(); i++) {
@@ -153,6 +166,17 @@ public class QuadTreeNode implements Serializable {
                 System.out.print("Centroid: " + centroids.get(j) + "Sons: " );
                 sons.get(j).printTree(step + 1);
             }
+        }
+    }
+
+    public int countNode() {
+        if(leaf)
+            return points.size();
+        else {
+            int count = 0;
+            for(QuadTreeNode n : sons)
+                count += n.countNode();
+            return count;
         }
     }
 

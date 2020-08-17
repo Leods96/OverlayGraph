@@ -12,8 +12,10 @@ import java.util.Map;
 
 public class ExternalCSVDump extends ExternalDumpManager {
     private static final String EXTENSION = ".csv";
-    private static final String[] HEADERS_GH = {"Code","Time","Distance","Route"};
-    private static final String[] HEADERS_LIQ = {"Code","Summary","Route"};
+    //private static final String[] HEADERS_GH = {"Code","Time","Distance","Route"};
+    //private static final String[] HEADERS_LIQ = {"Code","Summary","Route"};
+    private static final String[] HEADERS_GH = {"Code","Time","Distance"};
+    private static final String[] HEADERS_LIQ = {"Code","Summary"};
 
     private String[] HEADERS;
     private boolean usingGH;
@@ -78,11 +80,12 @@ public class ExternalCSVDump extends ExternalDumpManager {
     }
 
     public ExternalDumpManager saveDataForGH(Map object, String code) {
-        String[] temp = new String[4];
+        //TODO modified -> not using the route -> is to heavy
+        String[] temp = new String[3];
         temp[0] = code;
         temp[1] = object.get("time").toString();
         temp[2] = object.get("distance").toString();
-        temp[3] = object.get("routes").toString();
+        //temp[3] = object.get("routes").toString();
         csvFileObject.add(temp);
         return this;
     }
@@ -127,7 +130,7 @@ public class ExternalCSVDump extends ExternalDumpManager {
                 m.put("code", record.get(0));
                 m.put("time", record.get(1));
                 m.put("distance", record.get(2));
-                m.put("route", record.get(3));
+                //m.put("route", record.get(3));
             }
             return m;
         }
