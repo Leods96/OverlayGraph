@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class KdTreeSupporterTest extends TestCase {
     private static final String PATH_TO_READ = "C:\\Users\\leo\\Desktop\\ThesisProject1.0\\Addresses\\CountryInformation\\FilteredNodes\\FilteredFilteredResult.xlsx";
@@ -68,9 +69,9 @@ public class KdTreeSupporterTest extends TestCase {
         }
         //List<Point> pointsToBeTested = Util.GenerateRandomPoints(100, 36, 46, 7, 18);
         for(Point pointToBeTested : pointsToBeTested) {
-            List<Point> linearResult = linear.searchNeighbours(pointToBeTested, 4);
+            List<Point> linearResult = linear.searchNeighbours(pointToBeTested, 4).stream().map(NeighbourResponse::getPoint).collect(Collectors.toList());
 
-            List<Point> treeResult = kdtree.searchNeighbours(pointToBeTested, 4);
+            List<Point> treeResult = kdtree.searchNeighbours(pointToBeTested, 4).stream().map(NeighbourResponse::getPoint).collect(Collectors.toList());
 
             for(Point p : linearResult) {
                 for(Point p1 : treeResult) {
@@ -154,8 +155,8 @@ public class KdTreeSupporterTest extends TestCase {
         }
 
         for(Point point : pointsToBeTested) {
-            ArrayList<Point> linearResult = new ArrayList<>(linear.searchNeighbours(point, 4));
-            ArrayList<Point> treeResult = new ArrayList<>(tree.searchNeighbours(point, 4));
+            ArrayList<Point> linearResult = new ArrayList<>(linear.searchNeighbours(point, 4).stream().map(NeighbourResponse::getPoint).collect(Collectors.toList()));
+            ArrayList<Point> treeResult = new ArrayList<>(tree.searchNeighbours(point, 4).stream().map(NeighbourResponse::getPoint).collect(Collectors.toList()));
             System.out.println("Point : " + point);
             System.out.println("Linear result: " + linearResult);
             System.out.println("Tree result: " + treeResult);
@@ -219,8 +220,8 @@ public class KdTreeSupporterTest extends TestCase {
         }
 
         for(Point point : pointsToBeTested) {
-            ArrayList<Point> linearResult = new ArrayList<>(linear.searchNeighbours(point, 4, 50.0));
-            ArrayList<Point> treeResult = new ArrayList<>(tree.searchNeighbours(point, 4, 50.0));
+            ArrayList<Point> linearResult = new ArrayList<>(linear.searchNeighbours(point, 4, 50.0).stream().map(NeighbourResponse::getPoint).collect(Collectors.toList()));
+            ArrayList<Point> treeResult = new ArrayList<>(tree.searchNeighbours(point, 4, 50.0).stream().map(NeighbourResponse::getPoint).collect(Collectors.toList()));
             System.out.println("Point : " + point);
             System.out.println("Linear result: " + linearResult);
             System.out.println("Tree result: " + treeResult);

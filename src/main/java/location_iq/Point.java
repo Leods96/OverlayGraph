@@ -5,8 +5,8 @@ import java.io.Serializable;
 public class Point implements Serializable {
 
     private String code;
-    private Double latitude;
-    private Double longitude;
+    private final Double latitude;
+    private final Double longitude;
 
     public Point(String code, Double latitude, Double longitude){
         this.code = code;

@@ -89,13 +89,13 @@ public class MatrixOverlayGraph implements Serializable {
         this.localitySupporter = support;
     }*/
 
-    public List<Point> searchNeighbour(Point p) {
+    public List<NeighbourResponse> searchNeighbour(Point p) {
         if(useKdTree)
             return kdTreeSupporter.searchNeighbours(p, NUMBER_OF_NN);
         return linearSupporter.searchNeighbours(p, NUMBER_OF_NN);
     }
 
-    public List<Point> searchNeighbourWithAngleHint(Point p, double angle) {
+    public List<NeighbourResponse> searchNeighbourWithAngleHint(Point p, double angle) {
         if(useKdTree)
             return kdTreeSupporter.searchNeighbours(p, NUMBER_OF_NN, angle);
         return linearSupporter.searchNeighbours(p, NUMBER_OF_NN, angle);

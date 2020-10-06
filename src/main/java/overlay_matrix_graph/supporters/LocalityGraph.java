@@ -11,7 +11,7 @@ public class LocalityGraph implements Serializable {
     /**
      * Locality graph, hash that connect each node with his K nearest neighbours
      */
-    private final HashMap<String, ArrayList<Point>> graph;
+    private final HashMap<String, ArrayList<NeighbourResponse>> graph;
     /**
      * Number of computed nearest neighbours for each nodes
      */
@@ -45,7 +45,7 @@ public class LocalityGraph implements Serializable {
      * @param p point to be searched (must be in the graph)
      * @return The set of K nearest neighbours or null if the point is not presente into the graph
      */
-    public List<Point> getKNN(Point p) {
+    public List<NeighbourResponse> getKNN(Point p) {
         if(graph.containsKey(p.getCode()))
             return graph.get(p.getCode());
         return null;

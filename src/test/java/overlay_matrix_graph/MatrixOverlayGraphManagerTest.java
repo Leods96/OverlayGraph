@@ -3,7 +3,7 @@ package overlay_matrix_graph;
 import com.graphhopper.PathWrapper;
 import graph_hopper.GraphHopperInstance;
 import junit.framework.TestCase;
-import location_iq.ExcellReader;
+import location_iq.ExcelReader;
 import location_iq.exceptions.CellTypeException;
 import location_iq.Point;
 import overlay_matrix_graph.exceptions.NodeCodeNotInOverlayGraphException;
@@ -21,9 +21,9 @@ public class MatrixOverlayGraphManagerTest extends TestCase {
         GraphHopperInstance gh = new GraphHopperInstance();
         gh.preprocessing();
         //Read a random pair (origin, destination)
-        ExcellReader reader = null;
+        ExcelReader reader = null;
         try {
-            reader = new ExcellReader(PATH);
+            reader = new ExcelReader(PATH);
         } catch (IOException e) {
             e.printStackTrace();
             fail();

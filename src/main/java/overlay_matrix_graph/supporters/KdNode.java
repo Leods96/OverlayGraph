@@ -90,95 +90,91 @@ public class KdNode implements Serializable {
         return best;
     }
 
-    public List<Point> searchNeighbours(Point point, List<Point> bests, List<Double> distances, boolean splitOnLatitude, int size) {
+    public List<NeighbourResponse> searchNeighbours(Point point, List<NeighbourResponse> bests, boolean splitOnLatitude, int size) {
         if(node == null)
             return bests;
         HeartDistance calc = new HeartDistance();
         double distance = calc.calculate(node, point);
-        if(distances.size() < size) {
-            bests.add(node);
-            distances.add(distance);
+        if(bests.size() < size) {
+            bests.add(new NeighbourResponse(node, distance));
         } else {
-            double worse = getWorse(distances);
-            if(distance < worse) {
-                int index = distances.indexOf(worse);
-                distances = substituteDist(distances, distance, index);
-                bests = substituteNode(bests, node, index);
+            NeighbourResponse worse = getWorse(bests);
+            if(distance < worse.getDistance()) {
+                bests.remove(worse);
+                bests.add(new NeighbourResponse(node, distance));
             }
         }
         if(splitOnLatitude) {
             if(point.getLatitude() < node.getLatitude()) {
-                bests = leftChild.searchNeighbours(point, bests, distances, !splitOnLatitude, size);
-                if(getWorse(distances) - calc.calculate(point, new Point(node.getLatitude(), point.getLongitude())) > 0)
-                    return rightChild.searchNeighbours(point, bests, distances, !splitOnLatitude, size);
+                bests = leftChild.searchNeighbours(point, bests, !splitOnLatitude, size);
+                if(getWorse(bests).getDistance() - calc.calculate(point, new Point(node.getLatitude(), point.getLongitude())) > 0)
+                    return rightChild.searchNeighbours(point, bests, !splitOnLatitude, size);
             } else {
-                bests = rightChild.searchNeighbours(point, bests, distances, !splitOnLatitude, size);
-                if(getWorse(distances) - calc.calculate(point, new Point(node.getLatitude(), point.getLongitude())) > 0)
-                    return leftChild.searchNeighbours(point, bests, distances, !splitOnLatitude, size);
+                bests = rightChild.searchNeighbours(point, bests, !splitOnLatitude, size);
+                if(getWorse(bests).getDistance() - calc.calculate(point, new Point(node.getLatitude(), point.getLongitude())) > 0)
+                    return leftChild.searchNeighbours(point, bests, !splitOnLatitude, size);
             }
         } else {
             if(point.getLongitude() < node.getLongitude()) {
-                bests = leftChild.searchNeighbours(point, bests, distances, !splitOnLatitude, size);
-                if(getWorse(distances) - calc.calculate(point, new Point(point.getLatitude(), node.getLongitude())) > 0)
-                    return rightChild.searchNeighbours(point, bests, distances, !splitOnLatitude, size);
+                bests = leftChild.searchNeighbours(point, bests, !splitOnLatitude, size);
+                if(getWorse(bests).getDistance() - calc.calculate(point, new Point(point.getLatitude(), node.getLongitude())) > 0)
+                    return rightChild.searchNeighbours(point, bests, !splitOnLatitude, size);
             } else {
-                bests = rightChild.searchNeighbours(point, bests, distances, !splitOnLatitude, size);
-                if(getWorse(distances) - calc.calculate(point, new Point(point.getLatitude(), node.getLongitude())) > 0)
-                    return leftChild.searchNeighbours(point, bests, distances, !splitOnLatitude, size);
+                bests = rightChild.searchNeighbours(point, bests, !splitOnLatitude, size);
+                if(getWorse(bests).getDistance() - calc.calculate(point, new Point(point.getLatitude(), node.getLongitude())) > 0)
+                    return leftChild.searchNeighbours(point, bests, !splitOnLatitude, size);
             }
         }
         return bests;
     }
 
-    public List<Point> searchNeighbours(Point point, List<Point> bests, List<Double> distances, boolean splitOnLatitude, int size, double angle) {
+    public List<NeighbourResponse> searchNeighbours(Point point, List<NeighbourResponse> bests, boolean splitOnLatitude, int size, double angle) {
         if(node == null)
             return bests;
         HeartDistance calc = new HeartDistance();
         if(AngleCalculator.isInRange(angle, AngleCalculator.getAngle(point, node))) {
             double distance = calc.calculate(node, point);
-            if (distances.size() < size) {
-                bests.add(node);
-                distances.add(distance);
+            if(bests.size() < size) {
+                bests.add(new NeighbourResponse(node, distance));
             } else {
-                double worse = getWorse(distances);
-                if (distance < worse) {
-                    int index = distances.indexOf(worse);
-                    distances = substituteDist(distances, distance, index);
-                    bests = substituteNode(bests, node, index);
+                NeighbourResponse worse = getWorse(bests);
+                if(distance < worse.getDistance()) {
+                    bests.remove(worse);
+                    bests.add(new NeighbourResponse(node, distance));
                 }
             }
         }
         if(splitOnLatitude) {
             if(point.getLatitude() < node.getLatitude()) {
-                bests = leftChild.searchNeighbours(point, bests, distances, !splitOnLatitude, size);
-                if(bests.size() < size || getWorse(distances) - calc.calculate(point, new Point(node.getLatitude(), point.getLongitude())) > 0)
-                    return rightChild.searchNeighbours(point, bests, distances, !splitOnLatitude, size);
+                bests = leftChild.searchNeighbours(point, bests, !splitOnLatitude, size);
+                if(getWorse(bests).getDistance() - calc.calculate(point, new Point(node.getLatitude(), point.getLongitude())) > 0)
+                    return rightChild.searchNeighbours(point, bests, !splitOnLatitude, size);
             } else {
-                bests = rightChild.searchNeighbours(point, bests, distances, !splitOnLatitude, size);
-                if(bests.size() < size || getWorse(distances) - calc.calculate(point, new Point(node.getLatitude(), point.getLongitude())) > 0)
-                    return leftChild.searchNeighbours(point, bests, distances, !splitOnLatitude, size);
+                bests = rightChild.searchNeighbours(point, bests, !splitOnLatitude, size);
+                if(getWorse(bests).getDistance() - calc.calculate(point, new Point(node.getLatitude(), point.getLongitude())) > 0)
+                    return leftChild.searchNeighbours(point, bests, !splitOnLatitude, size);
             }
         } else {
             if(point.getLongitude() < node.getLongitude()) {
-                bests = leftChild.searchNeighbours(point, bests, distances, !splitOnLatitude, size);
-                if(bests.size() < size || getWorse(distances) - calc.calculate(point, new Point(point.getLatitude(), node.getLongitude())) > 0)
-                    return rightChild.searchNeighbours(point, bests, distances, !splitOnLatitude, size);
+                bests = leftChild.searchNeighbours(point, bests, !splitOnLatitude, size);
+                if(getWorse(bests).getDistance() - calc.calculate(point, new Point(point.getLatitude(), node.getLongitude())) > 0)
+                    return rightChild.searchNeighbours(point, bests, !splitOnLatitude, size);
             } else {
-                bests = rightChild.searchNeighbours(point, bests, distances, !splitOnLatitude, size);
-                if(bests.size() < size || getWorse(distances) - calc.calculate(point, new Point(point.getLatitude(), node.getLongitude())) > 0)
-                    return leftChild.searchNeighbours(point, bests, distances, !splitOnLatitude, size);
+                bests = rightChild.searchNeighbours(point, bests, !splitOnLatitude, size);
+                if(getWorse(bests).getDistance() - calc.calculate(point, new Point(point.getLatitude(), node.getLongitude())) > 0)
+                    return leftChild.searchNeighbours(point, bests, !splitOnLatitude, size);
             }
         }
         return bests;
     }
 
 
-    private double getWorse(List<Double> distances) {
-        double biggerDistance = distances.get(0);
-        for(int i = 1; i < distances.size(); i++)
-            if(distances.get(i) > biggerDistance)
-                biggerDistance = distances.get(i);
-        return biggerDistance;
+    private NeighbourResponse getWorse(List<NeighbourResponse> list) {
+        NeighbourResponse worse = list.get(0);
+        for(int i = 1; i < list.size(); i++)
+            if(list.get(i).getDistance() > worse.getDistance())
+                worse = list.get(i);
+        return worse;
     }
 
     private List<Double> substituteDist(List<Double> list, double obj, int index) {

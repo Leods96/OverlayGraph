@@ -18,6 +18,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class OverlayHighwayExitSplittedTest extends TestCase {
 
@@ -30,7 +31,7 @@ public class OverlayHighwayExitSplittedTest extends TestCase {
     private final int TO_SHEET_NUM = 0;
 
     private final String PATH_TO_READ = "C:\\Users\\leo\\Desktop\\ThesisProject1.0\\Addresses\\geocodedAddresses.xlsx";
-    private final String PATH_TO_WRITE = "C:\\Users\\leo\\Desktop\\ThesisProject1.0\\Addresses\\Test\\ProvinceBoundaries\\Result.xlsx";
+    private final String PATH_TO_WRITE = "C:\\Users\\leo\\Desktop\\ThesisProject1.0\\Addresses\\Test\\ProvinceBoundaries\\Angle-NoHav-Inc1,45.xlsx";
 
     public void testOverlayHighwayExit() {
         ArrayList<Point> nodes = new ArrayList<>();
@@ -178,6 +179,10 @@ public class OverlayHighwayExitSplittedTest extends TestCase {
 
         ArrayList<Object[]> res = new ArrayList<>(result.values());
         result = null;
+
+        //Removing result without middle path
+        res = new ArrayList(res.stream().filter(r -> !r[8].toString().equals("https://www.google.nl/maps/dir")).collect(Collectors.toList()));
+
         System.gc();
         Collections.sort(res, comp);
 

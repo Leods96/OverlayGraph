@@ -20,11 +20,11 @@ public class KdTreeSupporter implements Serializable, Supporter{
         return tree.searchNeighbour(point, tree.getNode(), splitOnLatitude);
     }
 
-    public List<Point> searchNeighbours(Point point, int size) {
-        return tree.searchNeighbours(point, new ArrayList<>(), new ArrayList<>(), splitOnLatitude, size);
+    public List<NeighbourResponse> searchNeighbours(Point point, int size) {
+        return tree.searchNeighbours(point, new ArrayList<>(), splitOnLatitude, size);
     }
 
-    public List<Point> searchNeighbours(Point point, int size, double angle) {
-        return tree.searchNeighbours(point, new ArrayList<>(), new ArrayList<>(), splitOnLatitude, size, angle);
+    public List<NeighbourResponse> searchNeighbours(Point point, int size, double angle) {
+        return tree.searchNeighbours(point, new ArrayList<>(), splitOnLatitude, size, angle);
     }
 }

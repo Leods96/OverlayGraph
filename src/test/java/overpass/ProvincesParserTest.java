@@ -4,6 +4,9 @@ import junit.framework.TestCase;
 import location_iq.Point;
 import util.BoundaryNodesFilter;
 
+import java.util.ArrayList;
+import java.util.stream.Collectors;
+
 public class ProvincesParserTest extends TestCase {
 
     private static final String COUNTRY_INFO_DIR = "C:\\Users\\leo\\Desktop\\ThesisProject1.0\\Addresses\\CountryInformation";
@@ -90,6 +93,18 @@ public class ProvincesParserTest extends TestCase {
         }
 
         return brng;
+    }
+
+
+    public void testArrayFIlter() {
+        ArrayList<Integer> array = new ArrayList<>();
+        array.add(1);
+        array.add(2);
+        array.add(3);
+        array.add(4);
+        array.add(5);
+        array.stream().filter(i -> i < 3).collect(Collectors.toList());
+        System.out.println(array);
     }
 
 }

@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Random;
 
-public class ExcellReader {
+public class ExcelReader {
     private String filename;
     private int numSheet;
     private XSSFWorkbook workBook = null;
@@ -26,11 +26,11 @@ public class ExcellReader {
         return this.workSheet;
     }
 
-    public ExcellReader(String fileName) throws IOException {
+    public ExcelReader(String fileName) throws IOException {
         openFile(fileName);
     }
 
-    public ExcellReader initializeIterator(String identifier) throws CheckPointException {
+    public ExcelReader initializeIterator(String identifier) throws CheckPointException {
         this.rowIterator = workSheet.rowIterator();
         Iterator<Row> temp = workSheet.rowIterator();
         if(!temp.hasNext())
@@ -49,7 +49,7 @@ public class ExcellReader {
         throw new CheckPointException("Impossible to retrieve the check point '" + identifier + "' into the file");
     }
 
-    public ExcellReader initializeIterator(){
+    public ExcelReader initializeIterator(){
         this.rowIterator = workSheet.rowIterator();
         if(rowIterator.hasNext())
             this.rowOnWorking = this.rowIterator.next(); //Jump the first useless line
@@ -142,14 +142,14 @@ public class ExcellReader {
         }
     }
 
-    public ExcellReader setSheetWithIndex(int index){
+    public ExcelReader setSheetWithIndex(int index){
         if(index < 0 || index > numSheet)
             throw new IndexOutOfBoundsException("wrong sheet index");
         this.workSheet = workBook.getSheetAt(index);
         return this;
     }
 
-    public ExcellReader setSheetWithName(String name){
+    public ExcelReader setSheetWithName(String name){
         XSSFSheet sheet = workBook.getSheet(name);
         if(sheet != null)
             this.workSheet = sheet;
@@ -158,7 +158,7 @@ public class ExcellReader {
         return this;
     }
 
-    private ExcellReader openFile(String fileName) throws IOException {
+    private ExcelReader openFile(String fileName) throws IOException {
         try (
                 FileInputStream file = new FileInputStream(new File(fileName))
         )
@@ -169,7 +169,7 @@ public class ExcellReader {
         return this;
     }
 
-    public ExcellReader randomRow() {
+    public ExcelReader randomRow() {
         int rowIndex = new Random().nextInt(this.workSheet.getLastRowNum());
         rowOnWorking = workSheet.getRow(rowIndex);
         return this;

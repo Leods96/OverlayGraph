@@ -10,6 +10,7 @@ public class OverlayResponse {
     //TODO work on speed profile
     private static final int SPEED = 35;
     private static final double FROM_KMH_TO_MS_CONVERSION = 0.277778;
+    private static final double HAVERSINE_INCREMENT = 1.45;
 
     private ArrayList<Double> time = new ArrayList<>();
     private final ArrayList<Double> distance = new ArrayList<>();
@@ -131,10 +132,15 @@ public class OverlayResponse {
      * @return OverlayResponse object
      */
     public OverlayResponse computeTimeWithSpeedProfile(double distance) {
-        this.distance.add(distance);
+        this.distance.add(distance * HAVERSINE_INCREMENT);
         //TODO check if this is ok
         //conversion of speed in ms and computation of the time converted in millisecond
         this.time.add((distance/(SPEED * FROM_KMH_TO_MS_CONVERSION)*1000));
+        return this;
+    }
+
+    public OverlayResponse setDistance(double distance) {
+        this.distance.add(distance * HAVERSINE_INCREMENT);
         return this;
     }
 

@@ -9,60 +9,49 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class LinearSupporter implements Serializable, Supporter {
-    private ArrayList<Point> points;
-    private ArrayList<Point> selected;
-    private ArrayList<Double> distance;
+    private final ArrayList<Point> points;
+    private ArrayList<NeighbourResponse> bests;
 
     public LinearSupporter(List<Point> records) {
         this.points = new ArrayList<>(records);
     }
 
-    public List<Point> searchNeighbours(Point point, int size) {
+    public List<NeighbourResponse> searchNeighbours(Point point, int size) {
         HeartDistance calculator = new HeartDistance();
-        selected = new ArrayList<>();
-        distance = new ArrayList<>();
+        bests = new ArrayList<>();
         points.forEach( p -> {
-            double tempDist = calculator.calculate(p, point);
-            if(selected.size() < size) {
-                selected.add(p);
-                distance.add(tempDist);
-            } else {
-                double worstDistance = takeBigger(distance);
-                if(tempDist < worstDistance) {
-                    int index = distance.indexOf(worstDistance);
-                    distance.remove(index);
-                    selected.remove(index);
-                    selected.add(p);
-                    distance.add(tempDist);
+                double tempDist = calculator.calculate(p, point);
+                if (bests.size() < size) {
+                    bests.add(new NeighbourResponse(p, tempDist));
+                } else {
+                    NeighbourResponse worstDistance = takeBigger(bests);
+                    if (tempDist < worstDistance.getDistance()) {
+                        bests.remove(worstDistance);
+                        bests.add(new NeighbourResponse(p, tempDist));
+                    }
                 }
-            }
         });
-        return selected;
+        return bests;
     }
 
-    public List<Point> searchNeighbours(Point point, int size, double angle) {
+    public List<NeighbourResponse> searchNeighbours(Point point, int size, double angle) {
         HeartDistance calculator = new HeartDistance();
-        selected = new ArrayList<>();
-        distance = new ArrayList<>();
+        bests = new ArrayList<>();
         points.forEach( p -> {
             if(AngleCalculator.isInRange(angle, AngleCalculator.getAngle(point, p))) {
                 double tempDist = calculator.calculate(p, point);
-                if (selected.size() < size) {
-                    selected.add(p);
-                    distance.add(tempDist);
+                if (bests.size() < size) {
+                    bests.add(new NeighbourResponse(p, tempDist));
                 } else {
-                    double worstDistance = takeBigger(distance);
-                    if (tempDist < worstDistance) {
-                        int index = distance.indexOf(worstDistance);
-                        distance.remove(index);
-                        selected.remove(index);
-                        selected.add(p);
-                        distance.add(tempDist);
+                    NeighbourResponse worstDistance = takeBigger(bests);
+                    if (tempDist < worstDistance.getDistance()) {
+                        bests.remove(worstDistance);
+                        bests.add(new NeighbourResponse(p, tempDist));
                     }
                 }
             }
         });
-        return selected;
+        return bests;
     }
 
 
@@ -77,11 +66,11 @@ public class LinearSupporter implements Serializable, Supporter {
     }
 
 
-    private double takeBigger(List<Double> dist) {
-        double bigger = Double.MIN_VALUE;
-        for(Double d : dist)
-            if(d > bigger)
-                bigger = d;
+    private NeighbourResponse takeBigger(List<NeighbourResponse> list) {
+        NeighbourResponse bigger = list.get(0);
+        for(int i = 1; i < list.size(); i++)
+            if(list.get(i).getDistance() > bigger.getDistance())
+                bigger = list.get(i);
         return bigger;
     }
 }

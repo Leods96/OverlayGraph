@@ -15,8 +15,8 @@ public class ControllerGH {
     private static final String DUMP_FOLDER = BASE_PATH + "GHDumpFolder\\Depot-Customer\\";
     private static final String CONFIGURATION_FOLDER = BASE_PATH + "configurationData\\";
 
-    private ExcellReader fromReader;
-    private ExcellReader toReader;
+    private ExcelReader fromReader;
+    private ExcelReader toReader;
     private int sheetFromNum;
     private int sheetToNum;
     private ExternalCSVDump dumpManager;
@@ -32,8 +32,8 @@ public class ControllerGH {
     public ControllerGH(String fromFile, int sheetFromNum, String toFile, int sheetToNum, String dumpFolder, String configurationFile){
         rm = new ResponseManager();
         try {
-            this.fromReader = new ExcellReader(fromFile);
-            this.toReader = new ExcellReader(toFile);
+            this.fromReader = new ExcelReader(fromFile);
+            this.toReader = new ExcelReader(toFile);
             this.dumpManager = new ExternalCSVDump(dumpFolder, true);
             if(configurationFile != null)
                 this.configurationManager = new ExternalConfigurationManager(configurationFile);

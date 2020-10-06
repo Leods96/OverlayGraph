@@ -8,5 +8,5 @@ public interface Supporter {
 
     public Point searchNeighbour(Point point);
 
-    public List<Point> searchNeighbours(Point point, int size);
+    public List<NeighbourResponse> searchNeighbours(Point point, int size);
 }

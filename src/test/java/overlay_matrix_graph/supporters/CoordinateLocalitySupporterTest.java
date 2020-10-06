@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class CoordinateLocalitySupporterTest extends TestCase {
 
@@ -71,7 +72,7 @@ public class CoordinateLocalitySupporterTest extends TestCase {
         int failedIntersection = 0;
         long time = System.nanoTime();
         for(Point pointToBeTested : pointsToBeTested) {
-            List<Point> linearResult = linear.searchNeighbours(pointToBeTested, 4);
+            List<Point> linearResult = linear.searchNeighbours(pointToBeTested, 4).stream().map(NeighbourResponse::getPoint).collect(Collectors.toList());
             time = System.nanoTime();
             List<Point> cooResult = cooSupp.searchNeighbours(pointToBeTested);
 

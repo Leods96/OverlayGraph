@@ -42,7 +42,7 @@ public class Util {
         MatrixOverlayGraphManager graphManager = null;
         System.out.println("Starting with the graph creation...");
         graphManager = new MatrixOverlayGraphManager();
-        graphManager.loadOrCreateGraph(graphFolder, dumpFolder, tree);
+        graphManager.loadOrCreateGraph(graphFolder, dumpFolder, false);
         System.out.println("OverlayGraph created");
         return graphManager;
     }

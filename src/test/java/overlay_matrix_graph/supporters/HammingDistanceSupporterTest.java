@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class HammingDistanceSupporterTest extends TestCase {
 
@@ -48,7 +49,7 @@ public class HammingDistanceSupporterTest extends TestCase {
         List<Point> pointsToBeTested = Util.GenerateRandomPoints(100, 36, 46, 7, 18);
         long time = System.nanoTime();
         for(Point pointToBeTested : pointsToBeTested) {
-            List<Point> linearResult = linear.searchNeighbours(pointToBeTested, 4);
+            List<Point> linearResult = linear.searchNeighbours(pointToBeTested, 4).stream().map(NeighbourResponse::getPoint).collect(Collectors.toList());
             System.out.println("Linear research requires:  " + (System.nanoTime() - time) / 1000 + " micros");
             time = System.nanoTime();
             List<Point> hammingResult = hamming.searchNearestBucket(pointToBeTested);

@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class QuadTreeNodeTest extends TestCase {
     private static final int NUMBER_OF_POINTS = 4;
@@ -135,7 +136,7 @@ public class QuadTreeNodeTest extends TestCase {
         int failedIntersection = 0;
         long time = System.nanoTime();
         for(Point pointToBeTested : pointsToBeTested) {
-            List<Point> linearResult = linear.searchNeighbours(pointToBeTested, 4);
+            List<Point> linearResult = linear.searchNeighbours(pointToBeTested, 4).stream().map(NeighbourResponse::getPoint).collect(Collectors.toList());
             time = System.nanoTime();
             List<Point> treeResult = tree.searchNeighbour(pointToBeTested);
 

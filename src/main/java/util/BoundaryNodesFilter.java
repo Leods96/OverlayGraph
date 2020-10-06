@@ -1,6 +1,6 @@
 package util;
 
-import location_iq.ExcellReader;
+import location_iq.ExcelReader;
 import location_iq.Point;
 import location_iq.exceptions.CellTypeException;
 import org.apache.poi.ss.usermodel.Row;
@@ -12,7 +12,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.stream.Collectors;
 
 public class BoundaryNodesFilter {
 
@@ -25,7 +24,7 @@ public class BoundaryNodesFilter {
         File folder = new File(dirPath + "\\FilteredNodes");
         File[] files = folder.listFiles();
         for (File f : files) {
-            ExcellReader reader = new ExcellReader(f.getAbsolutePath()).setSheetWithIndex(0).initializeIterator();
+            ExcelReader reader = new ExcelReader(f.getAbsolutePath()).setSheetWithIndex(0).initializeIterator();
             inputPoints = new ArrayList<>();
             outputPoints = new ArrayList<>();
             while(reader.nextRow())
@@ -67,7 +66,7 @@ public class BoundaryNodesFilter {
         File folder = new File(dirPath + "\\Nodes");
         File[] files = folder.listFiles();
         for (File f : files) {
-            ExcellReader reader = new ExcellReader(f.getAbsolutePath()).setSheetWithIndex(0).initializeIterator();
+            ExcelReader reader = new ExcelReader(f.getAbsolutePath()).setSheetWithIndex(0).initializeIterator();
             while(reader.nextRow()) {
                 nodes.compute(reader.getID(), (k, v) -> (v == null) ? 1 : v + 1);
                 if (nodes.get(reader.getID()) == 2)
@@ -98,8 +97,8 @@ public class BoundaryNodesFilter {
         File[] files = folder.listFiles();
         int nodesCount = 0;
         for (File f : files) {
-            System.out.println("File: " + f.getName() + " has " + (new ExcellReader(f.getAbsolutePath()).setSheetWithIndex(0).getNumberOfRowsInSheet()));
-            nodesCount += new ExcellReader(f.getAbsolutePath()).setSheetWithIndex(0).getNumberOfRowsInSheet();
+            System.out.println("File: " + f.getName() + " has " + (new ExcelReader(f.getAbsolutePath()).setSheetWithIndex(0).getNumberOfRowsInSheet()));
+            nodesCount += new ExcelReader(f.getAbsolutePath()).setSheetWithIndex(0).getNumberOfRowsInSheet();
         }
         return nodesCount;
     }
@@ -110,7 +109,7 @@ public class BoundaryNodesFilter {
         File[] files = folder.listFiles();
         sb.append("(");
         for (File f : files) {
-            ExcellReader reader = new ExcellReader(f.getAbsolutePath()).setSheetWithIndex(0).initializeIterator();
+            ExcelReader reader = new ExcelReader(f.getAbsolutePath()).setSheetWithIndex(0).initializeIterator();
             while(reader.nextRow())
                 sb.append("node(").append(reader.getID()).append(");");
         }

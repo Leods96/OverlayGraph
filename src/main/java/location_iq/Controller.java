@@ -20,15 +20,15 @@ public class Controller {
     private static final String FILE = BASE_PATH + "geocodedAddresses.xlsx";
     private static final String DUMP_FOLDER = BASE_PATH + "csvDistanceDump\\";
     private static final String CONFIGURATION_FOLDER = BASE_PATH + "configurationData\\";
-    //<true> = serial used of tokens, <false> = simultaneus used of tokens
+    //<true> = serial used of tokens, <false> = simultaneous used of tokens
     private static final boolean SERIAL_PROCESS = false;
 
     private String token;
     private ArrayList<String> tokens;
     private boolean tokenFinished = false;
     private LocIQAPI api;
-    private ExcellReader fromReader;
-    private ExcellReader toReader;
+    private ExcelReader fromReader;
+    private ExcelReader toReader;
     private ExternalDumpManager dumpManager;
     private ExternalConfigurationManager configurationManager;
     private ResponseManager rm;
@@ -39,8 +39,8 @@ public class Controller {
         api = new LocIQAPI();
         rm = new ResponseManager();
         try {
-            fromReader = new ExcellReader(FILE);
-            toReader = new ExcellReader(FILE);
+            fromReader = new ExcelReader(FILE);
+            toReader = new ExcelReader(FILE);
             dumpManager = new ExternalCSVDump(DUMP_FOLDER, false);
             configurationManager = new ExternalConfigurationManager(CONFIGURATION_FOLDER);
         }catch(IOException e){

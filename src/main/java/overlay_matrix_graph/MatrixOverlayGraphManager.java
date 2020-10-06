@@ -4,16 +4,12 @@ import location_iq.ExternalCSVDump;
 import location_iq.Point;
 import overlay_matrix_graph.exceptions.NodeCodeNotInOverlayGraphException;
 import overlay_matrix_graph.exceptions.NodeNotInOverlayGraphException;
-import overlay_matrix_graph.supporters.LocalityGraph;
+import overlay_matrix_graph.supporters.NeighbourResponse;
 import overlay_matrix_graph.supporters.Supporter;
 import util.AngleCalculator;
 import util.HeartDistance;
-
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
  //TODO maybe it is possible to write only the graph after that the supporters are created and not do a lot of write and read for each supporters
 /**
@@ -27,8 +23,10 @@ public class MatrixOverlayGraphManager {
     private static final String KDTREE_SUPPORTER_PATH = "OverlayGraph\\KdTree";
     //private static final String LOCALITY_GRAPH_PATH = "OverlayGraph\\LocalityGraph";
     private static final String LINEAR_SUPPORTER = "OverlayGraph\\Linear";
+    //TODO make these as parameter and check
     private static final boolean angleNeighboursHint = true;
     private static final int THRESHOLD_NEIGHBOUR_DISTANCE = 100000; //100 km
+    private static final boolean BEST_PATH_CHOSE_OVER_OVERLAY_ONLY = false;
     /**
      * This threshold represent the maximum allowed distance (in meters) between the nearest neighbour
      * and the other possible neighbours
@@ -249,14 +247,14 @@ public class MatrixOverlayGraphManager {
      * the selected node as part of the OverlayGraph
      */
     public OverlayResponse route(Point fromPoint, Point toPoint) throws NodeCodeNotInOverlayGraphException {
-        ArrayList<Point> originNeighbours = null;
-        ArrayList<Point> destinationNeighbours = null;
+        ArrayList<NeighbourResponse> originNeighbours = null;
+        ArrayList<NeighbourResponse> destinationNeighbours = null;
         OverlayResponse response = new OverlayResponse(fromPoint, toPoint);
 
         try {
             response.setOriginCode(graph.pointPresentIntoGraph(fromPoint).getCode());
             originNeighbours = new ArrayList<>();
-            originNeighbours.add(fromPoint);
+            originNeighbours.add(new NeighbourResponse(fromPoint, 0.0));
         } catch (NodeNotInOverlayGraphException e) {
             originNeighbours = new ArrayList<>(graph.searchNeighbour(fromPoint));
             if(angleNeighboursHint)
@@ -267,7 +265,7 @@ public class MatrixOverlayGraphManager {
         try {
             response.setDestinationCode(graph.pointPresentIntoGraph(toPoint).getCode());
             destinationNeighbours = new ArrayList<>();
-            destinationNeighbours.add(toPoint);
+            destinationNeighbours.add(new NeighbourResponse(toPoint, 0.0));
         } catch (NodeNotInOverlayGraphException e) {
             destinationNeighbours = new ArrayList<>(graph.searchNeighbour(toPoint));
             if(angleNeighboursHint)
@@ -275,7 +273,10 @@ public class MatrixOverlayGraphManager {
                         searchNeighbourWithAngleHint(toPoint, AngleCalculator.getAngle(toPoint, fromPoint)));
             response.setFinalStep();
         }
-        return neighboursComputation(response, originNeighbours, destinationNeighbours);
+        if(BEST_PATH_CHOSE_OVER_OVERLAY_ONLY)
+            return neighboursOverlayComputation(response, originNeighbours, destinationNeighbours);
+        else
+            return neighboursTotalComputation(response, originNeighbours, destinationNeighbours);
     }
 
     /**
@@ -292,48 +293,85 @@ public class MatrixOverlayGraphManager {
      * @throws NodeCodeNotInOverlayGraphException Exception raised if the graph will not contain the code of
      * the selected node as part of the OverlayGraph
      */
-    public OverlayResponse neighboursComputation(OverlayResponse response, List<Point> originNeighbours, List<Point> destinationNeighbours ) throws NodeCodeNotInOverlayGraphException {
+    public OverlayResponse neighboursOverlayComputation(OverlayResponse response, List<NeighbourResponse> originNeighbours, List<NeighbourResponse> destinationNeighbours ) throws NodeCodeNotInOverlayGraphException {
         //Check the intersection between the neighbours
-        for (Point p : originNeighbours) {
-            if (destinationNeighbours.contains(p)) {
+        if (checkIntersectionBetweenNeighbours(originNeighbours, destinationNeighbours)) {
                 System.out.println("Neighbours intersection");
                 response.removeOverlayFromResponse();
-                return routeComposition(response, null);
-            }
+                return routeComposition(response, null, null, null);
         }
         //Computation of the best overlay path
         originNeighbours = neighboursFiltering(originNeighbours);
         destinationNeighbours = neighboursFiltering(destinationNeighbours);
-        Point origin = null;
-        Point destination = null;
+        NeighbourResponse origin = null;
+        NeighbourResponse destination = null;
         double overlayDistance = Double.MAX_VALUE;
         RouteInfo middlePath = null;
-        for(Point p1 : originNeighbours) {
-            for (Point p2 : destinationNeighbours) {
-                RouteInfo resp = graph.route(p1.getCode(), p2.getCode());
+        for(NeighbourResponse n1 : originNeighbours) {
+            for (NeighbourResponse n2 : destinationNeighbours) {
+                RouteInfo resp = graph.route(n1.getPoint().getCode(), n2.getPoint().getCode());
                 if(resp.getDistance() < overlayDistance) {
-                    origin = p1;
-                    destination = p2;
+                    origin = n1;
+                    destination = n2;
                     overlayDistance = resp.getDistance();
                     middlePath = resp;
                 }
             }
         }
-        response.setOriginNeighbour(origin);
-        response.setDestinationNeighbour(destination);
-        return routeComposition(response, middlePath);
+        response.setOriginNeighbour(origin.getPoint());
+        response.setDestinationNeighbour(destination.getPoint());
+        return routeComposition(response, middlePath, origin.getDistance(), destination.getDistance());
     }
 
-    /**
-     * Remove from the input list all the points with a distance with respect to the first element
-     * above the threshold
-     * @param points Ordered list of points to be filtered
-     * @return A filtered list of points
-     */
-    private List<Point> neighboursFiltering(List<Point> points) {
-        Point nearest = points.get(0);
+    public OverlayResponse neighboursTotalComputation(OverlayResponse response, List<NeighbourResponse> originNeighbours, List<NeighbourResponse> destinationNeighbours ) throws NodeCodeNotInOverlayGraphException {
+        originNeighbours = originNeighbours.stream().filter(n -> n.getDistance() < THRESHOLD_NEIGHBOUR_DISTANCE).collect(Collectors.toList());
+        destinationNeighbours = destinationNeighbours.stream().filter(n -> n.getDistance() < THRESHOLD_NEIGHBOUR_DISTANCE).collect(Collectors.toList());
+
+        if(checkIntersectionBetweenNeighbours(originNeighbours, destinationNeighbours)) {
+            System.out.println("Neighbours intersection");
+            response.removeOverlayFromResponse();
+            return routeComposition(response, null, null, null);
+        }
+
+        double bestDistance = Double.MAX_VALUE;
+        NeighbourResponse bestOriginNeighbour = null;
+        NeighbourResponse bestDestinationNeighbour = null;
+        RouteInfo bestRouteInfo = null;
+
+        for(NeighbourResponse nOrigin : originNeighbours) {
+            for (NeighbourResponse nDestination : destinationNeighbours) {
+                RouteInfo ri = graph.route(nOrigin.getPoint().getCode(), nDestination.getPoint().getCode());
+                double tempDistance = nOrigin.getDistance() + ri.getDistance() + nDestination.getDistance();
+                if (tempDistance < bestDistance) {
+                    bestDistance = tempDistance;
+                    bestOriginNeighbour = nOrigin;
+                    bestDestinationNeighbour = nDestination;
+                    bestRouteInfo = ri;
+                }
+            }
+        }
+        response.setOriginNeighbour(bestOriginNeighbour.getPoint());
+        response.setDestinationNeighbour(bestDestinationNeighbour.getPoint());
+        return routeComposition(response, bestRouteInfo, bestOriginNeighbour.getDistance(), bestDestinationNeighbour.getDistance());
+    }
+
+    private boolean checkIntersectionBetweenNeighbours(List<NeighbourResponse> originNeighbours, List<NeighbourResponse> destinationNeighbours) {
+        for (Point p : originNeighbours.stream().map(NeighbourResponse::getPoint).collect(Collectors.toList()))
+            if (destinationNeighbours.stream().map(NeighbourResponse::getPoint).collect(Collectors.toList()).contains(p))
+                return true;
+        return false;
+    }
+        /**
+         * Remove from the input list all the points with a distance with respect to the first element
+         * above the threshold
+         * @param listOfNeighbours list of points to be filtered
+         * @return A filtered list of points
+         */
+    private List<NeighbourResponse> neighboursFiltering(List<NeighbourResponse> listOfNeighbours) {
+        listOfNeighbours.sort(Comparator.comparingDouble(NeighbourResponse::getDistance));
+        NeighbourResponse nearest = listOfNeighbours.get(0);
         HeartDistance calculator = new HeartDistance();
-        return points.stream().filter(p -> calculator.calculate(p,nearest) < NEIGHBOURS_THRESHOLD).collect(Collectors.toList());
+        return listOfNeighbours.stream().filter(p -> calculator.calculate(p.getPoint(), nearest.getPoint()) < NEIGHBOURS_THRESHOLD).collect(Collectors.toList());
     }
 
     /**
@@ -345,7 +383,7 @@ public class MatrixOverlayGraphManager {
      * @throws NodeCodeNotInOverlayGraphException Exception raised if the graph will not contain the code of
      * the selected node as part of the OverlayGraph
      */
-    public OverlayResponse routeComposition(OverlayResponse response, RouteInfo overlayDistance) throws NodeCodeNotInOverlayGraphException {
+    public OverlayResponse routeComposition(OverlayResponse response, RouteInfo overlayDistance, Double originDistance, Double destinationDistance) throws NodeCodeNotInOverlayGraphException {
         HeartDistance distCalculator = new HeartDistance();
         //FARE: check su middel path
         if(!response.getMiddlePath()) {
@@ -354,16 +392,14 @@ public class MatrixOverlayGraphManager {
             return response;
         }
         if(response.getInitialPath()) {
-            response.computeTimeWithSpeedProfile(distCalculator.
-                    calculate(response.getOrigin(), response.getOriginNeighbour()));
+            response.setDistance(originDistance);
         }
-        //FARE: rimuovere e mettere rsultato pre funzione
+        //TODO: rimuovere e mettere risultato pre funzione
         if(response.getMiddlePath()) {
             response.concat(overlayDistance);
         }
         if(response.getFinalPath()) {
-            response.computeTimeWithSpeedProfile(distCalculator.
-                    calculate(response.getDestinationNeighbour(), response.getDestination()));
+            response.setDistance(destinationDistance);
         }
         return response;
     }
