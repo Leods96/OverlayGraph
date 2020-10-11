@@ -1,7 +1,7 @@
 package util;
 
 import graph_hopper.ControllerGH;
-import location_iq.Point;
+import objects.Point;
 import overlay_matrix_graph.MatrixOverlayGraphManager;
 
 import java.util.ArrayList;

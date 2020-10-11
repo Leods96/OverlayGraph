@@ -1,6 +1,6 @@
 package util;
 
-import location_iq.Point;
+import objects.Point;
 
 import static java.lang.Math.*;
 

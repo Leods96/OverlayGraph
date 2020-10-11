@@ -1,7 +1,7 @@
 package overlay_matrix_graph;
 
 import junit.framework.TestCase;
-import location_iq.Point;
+import objects.Point;
 import org.junit.Test;
 import overlay_matrix_graph.exceptions.NodeCodeNotInOverlayGraphException;
 import util.Util;

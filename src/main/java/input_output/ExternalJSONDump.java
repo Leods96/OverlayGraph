@@ -1,4 +1,4 @@
-package location_iq;
+package input_output;
 
 import org.json.simple.JSONObject;
 

@@ -1,6 +1,6 @@
-package overpass;
+package external_api;
 
-import location_iq.exceptions.BadResponseException;
+import external_api.exceptions.BadResponseException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 

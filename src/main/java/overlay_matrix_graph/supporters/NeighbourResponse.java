@@ -1,6 +1,6 @@
 package overlay_matrix_graph.supporters;
 
-import location_iq.Point;
+import objects.Point;
 
 public class NeighbourResponse {
 

@@ -10,15 +10,28 @@ import java.net.ConnectException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+/**
+ * This class is used to preform requests to the https://chromium-i18n.appspot.com/ssl-address/data/
+ * website to obtain countries' information
+ */
 public class CountryInfoRequest {
     private static final String HTTPS_URL = "https://chromium-i18n.appspot.com/ssl-address/data/";
-    private URL url;
+    private final URL url;
 
+    /**
+     * ISO code information here https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes
+     * @param countryCode is the ISO-3166 Alpha-2 code of the requested country
+     * @throws MalformedURLException
+     */
     CountryInfoRequest(String countryCode) throws MalformedURLException {
         url = new URL(HTTPS_URL + countryCode);
     }
 
-    public JSONObject executeRequest() throws IOException {
+    /**
+     * Perform the request
+     * @return JSONObject containing the data
+     */
+    public JSONObject executeRequest() {
         HttpsURLConnection con = null;
         try {
             con = (HttpsURLConnection) url.openConnection();
@@ -29,7 +42,7 @@ public class CountryInfoRequest {
         }
     }
 
-    private static JSONObject getResponse(HttpsURLConnection con) throws IOException{
+    private static JSONObject getResponse(HttpsURLConnection con) {
         if (con != null) {
             BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream()));
             StringBuilder sb = new StringBuilder();

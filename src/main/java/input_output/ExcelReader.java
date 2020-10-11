@@ -1,7 +1,7 @@
-package location_iq;
+package input_output;
 
-import location_iq.exceptions.CellTypeException;
-import location_iq.exceptions.CheckPointException;
+import input_output.exceptions.CellTypeException;
+import input_output.exceptions.CheckPointException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -13,6 +13,11 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Random;
 
+/**
+ * This class is used as wrapper to ensure an easier access to the excel file, the purpose is to scan
+ * an excel file that contains a list of geo-coded points in this format:
+ *      Unique ID - Latitude - Longitude
+ */
 public class ExcelReader {
     private String filename;
     private int numSheet;
@@ -21,10 +26,6 @@ public class ExcelReader {
     private Iterator<Row> rowIterator;
     private Row rowOnWorking;
     private boolean finished = false;
-
-    public XSSFSheet getWorkSheet(){
-        return this.workSheet;
-    }
 
     public ExcelReader(String fileName) throws IOException {
         openFile(fileName);
@@ -75,28 +76,25 @@ public class ExcelReader {
         return rowIterator.hasNext();
     }
 
-    public boolean isFinished() {
-        return finished;
-    }
-
     public int getRowNumber(){
         return rowOnWorking.getRowNum();
     }
 
-    public int getNumberOfRowsInSheet() {
-        if (workSheet != null)
-            return this.workSheet.getLastRowNum();
-        return 0;
-    }
-
+    /**
+     * Read the ID value of the point from the file
+     */
     public String getID() throws CellTypeException{
         return getStringCellValue(rowOnWorking.getCell(0));
     }
-
+    /**
+     * Read the Latitude value of the point from the file
+     */
     public Double getLatitude() throws CellTypeException{
         return getDoubleCellValue(rowOnWorking.getCell(1));
     }
-
+    /**
+     * Read the Longitude value of the point from the file
+     */
     public Double getLongitude() throws CellTypeException{
         return getDoubleCellValue(rowOnWorking.getCell(2));
     }
@@ -142,22 +140,6 @@ public class ExcelReader {
         }
     }
 
-    public ExcelReader setSheetWithIndex(int index){
-        if(index < 0 || index > numSheet)
-            throw new IndexOutOfBoundsException("wrong sheet index");
-        this.workSheet = workBook.getSheetAt(index);
-        return this;
-    }
-
-    public ExcelReader setSheetWithName(String name){
-        XSSFSheet sheet = workBook.getSheet(name);
-        if(sheet != null)
-            this.workSheet = sheet;
-        else
-            throw new IndexOutOfBoundsException("wrong sheet name");
-        return this;
-    }
-
     private ExcelReader openFile(String fileName) throws IOException {
         try (
                 FileInputStream file = new FileInputStream(new File(fileName))
@@ -173,6 +155,36 @@ public class ExcelReader {
         int rowIndex = new Random().nextInt(this.workSheet.getLastRowNum());
         rowOnWorking = workSheet.getRow(rowIndex);
         return this;
+    }
+
+    public ExcelReader setSheetWithName(String name){
+        XSSFSheet sheet = workBook.getSheet(name);
+        if(sheet != null)
+            this.workSheet = sheet;
+        else
+            throw new IndexOutOfBoundsException("wrong sheet name");
+        return this;
+    }
+
+    public ExcelReader setSheetWithIndex(int index){
+        if(index < 0 || index > numSheet)
+            throw new IndexOutOfBoundsException("wrong sheet index");
+        this.workSheet = workBook.getSheetAt(index);
+        return this;
+    }
+
+    public XSSFSheet getWorkSheet(){
+        return this.workSheet;
+    }
+
+    public int getNumberOfRowsInSheet() {
+        if (workSheet != null)
+            return this.workSheet.getLastRowNum();
+        return 0;
+    }
+
+    public boolean isFinished() {
+        return finished;
     }
 
 }

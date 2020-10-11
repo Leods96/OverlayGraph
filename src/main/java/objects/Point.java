@@ -1,19 +1,30 @@
-package location_iq;
+package objects;
 
 import java.io.Serializable;
 
+/**
+ * Object that represents a Geocoded point over a map
+ * Each point has a unique code that work as identifier and in represented as combination of two data:
+ * Latitude and Longitude representing the position on the earth map
+ */
 public class Point implements Serializable {
 
     private String code;
     private final Double latitude;
     private final Double longitude;
 
+    /**
+     * standard Constructor into which all the parameters are defined
+     */
     public Point(String code, Double latitude, Double longitude){
         this.code = code;
         this.latitude = latitude;
         this.longitude = longitude;
     }
 
+    /**
+     * Constructor with only coordinates, used for test of for a temporal instance of the object
+     */
     public Point(Double latitude, Double longitude){
         this.code = null;
         this.latitude = latitude;

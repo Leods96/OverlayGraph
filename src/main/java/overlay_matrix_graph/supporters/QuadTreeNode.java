@@ -1,7 +1,7 @@
 package overlay_matrix_graph.supporters;
 
 import clusterization.*;
-import location_iq.Point;
+import objects.Point;
 import util.EuclideanDistance;
 import util.HeartDistance;
 

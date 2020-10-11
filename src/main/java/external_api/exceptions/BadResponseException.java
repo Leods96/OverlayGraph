@@ -1,4 +1,4 @@
-package location_iq.exceptions;
+package external_api.exceptions;
 
 public class BadResponseException extends Exception {
 

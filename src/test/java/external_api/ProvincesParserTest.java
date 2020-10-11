@@ -1,7 +1,7 @@
-package overpass;
+package external_api;
 
 import junit.framework.TestCase;
-import location_iq.Point;
+import objects.Point;
 import util.BoundaryNodesFilter;
 
 import java.util.ArrayList;

@@ -1,7 +1,7 @@
 package overlay_matrix_graph.supporters;
 
 import junit.framework.TestCase;
-import location_iq.Point;
+import objects.Point;
 import util.Util;
 
 import java.util.ArrayList;

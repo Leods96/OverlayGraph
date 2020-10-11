@@ -5,7 +5,7 @@ import com.graphhopper.GHResponse;
 import com.graphhopper.GraphHopper;
 import com.graphhopper.PathWrapper;
 import com.graphhopper.routing.util.EncodingManager;
-import location_iq.Point;
+import objects.Point;
 
 public class GraphHopperInstance {
 

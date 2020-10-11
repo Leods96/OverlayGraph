@@ -1,8 +1,8 @@
 package util;
 
-import location_iq.ExcelReader;
-import location_iq.Point;
-import location_iq.exceptions.CellTypeException;
+import input_output.ExcelReader;
+import objects.Point;
+import input_output.exceptions.CellTypeException;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;

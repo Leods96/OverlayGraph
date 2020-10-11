@@ -1,6 +1,6 @@
 package clusterization;
 
-import location_iq.Point;
+import objects.Point;
 
 import java.util.List;
 import java.util.Map;

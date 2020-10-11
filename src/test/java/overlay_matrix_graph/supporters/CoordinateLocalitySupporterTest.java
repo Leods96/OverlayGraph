@@ -1,11 +1,10 @@
 package overlay_matrix_graph.supporters;
 
 import junit.framework.TestCase;
-import location_iq.Point;
+import objects.Point;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import util.Util;
 
 import java.io.File;
 import java.io.FileInputStream;

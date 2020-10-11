@@ -1,15 +1,16 @@
 package graph_hopper;
 
 import com.graphhopper.PathWrapper;
-import location_iq.*;
-import location_iq.exceptions.CellTypeException;
-import location_iq.exceptions.CheckPointException;
+import input_output.*;
+import input_output.exceptions.CellTypeException;
+import input_output.exceptions.CheckPointException;
+import objects.Point;
 import org.json.JSONObject;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
 public class ControllerGH {
-
+    //TODO make these a custom params
     private static final String BASE_PATH = "C:\\Users\\leo\\Desktop\\ThesisProject1.0\\Addresses\\";
     private static final String FILE = BASE_PATH + "geocodedAddresses.xlsx";
     private static final String DUMP_FOLDER = BASE_PATH + "GHDumpFolder\\Depot-Customer\\";
@@ -21,20 +22,22 @@ public class ControllerGH {
     private int sheetToNum;
     private ExternalCSVDump dumpManager;
     private ExternalConfigurationManager configurationManager;
-    private ResponseManager rm;
+    private final ResponseManager rm;
     private GraphHopperInstance gh;
 
     /**
-     * Open two file: fromFile and toFile containing the addresses from which compute the distances, and write
-     * the results into the dump folder
-     * configurationFile useful for the checkPoint, if null skip the configuration
+     * Constructor for the ControllerGH Object
+     * Creation of two ExcelReader: fromFile and toFile to read the addresses from which compute
+     * the distances
+     * Creation of an ExternalDumpManager object to write the results into the dump folder
+     * Creation of ExternalConfigurationManager useful for the checkPoint, if null skip the configuration
      */
     public ControllerGH(String fromFile, int sheetFromNum, String toFile, int sheetToNum, String dumpFolder, String configurationFile){
         rm = new ResponseManager();
         try {
             this.fromReader = new ExcelReader(fromFile);
             this.toReader = new ExcelReader(toFile);
-            this.dumpManager = new ExternalCSVDump(dumpFolder, true);
+            this.dumpManager = new ExternalCSVDump(dumpFolder);
             if(configurationFile != null)
                 this.configurationManager = new ExternalConfigurationManager(configurationFile);
             else
@@ -48,7 +51,11 @@ public class ControllerGH {
         }
     }
 
-
+    /**
+     * Change the dumpManagerFile configuration in order to work with a new dump each time
+     * @return Point containing the information of the starting point for each route that will be
+     * computed, if the Cell contains error the return is null
+     */
     private Point setDumpManagerFile() {
         try {
             dumpManager.setFile(fromReader.getID());
@@ -88,31 +95,35 @@ public class ControllerGH {
     }
 
     /**
-     * perform the request to graphHopper with the read data from fromReader and toReader, and save the data into
-     * the dumpManager
-     * @return a checkPoint, useful if we want to split the process
+     * perform the request to graphHopper with the read data from fromReader and toReader
+     * and save the data into the dumpManager
+     * @return CheckPoint, useful if we want to split the process
      */
     private CheckPoint standardRequest() {
         String fromID = null, toID = null;
         try {
             fromID = fromReader.getID();
             toID = toReader.getID();
-            PathWrapper response = gh.routing(new double[]{fromReader.getLatitude(), fromReader.getLongitude()},
-                    new double[]{toReader.getLatitude(), toReader.getLongitude()});
-            dumpManager.saveDataForGH(rm.filterResponse(response).toMap(), toID);
+            PathWrapper response = gh.routing
+                    (
+                        new double[]{fromReader.getLatitude(), fromReader.getLongitude()},
+                        new double[]{toReader.getLatitude(), toReader.getLongitude()}
+                    );
+            dumpManager.saveDataForGH(rm.filterResponse(response), toID);
         } catch (RuntimeException e) {
             dumpManager.saveData(new JSONObject().put("message",e.getMessage()).toMap(),toID);
         } catch (CellTypeException e) {
-            System.err.println("Cell type exception reding rowFrom: " + fromReader.getRowNumber() + ", rowTo: " + toReader.getRowNumber());
+            System.err.println("Cell type exception reading rowFrom: " + fromReader.getRowNumber() + ", rowTo: " + toReader.getRowNumber());
             return null;
         }
         return new CheckPoint(fromID, toID);
     }
 
     /**
-     * Initialization of the reader, if the conf file is not present of was not passed will start from the
-     * begin of the files
-     * @throws CheckPointException
+     * Creation and initialization of the GraphHopperInstance
+     * Initialization of the readers, if the configurationFile is not present
+     * the reader will start from the beginning of the file
+     * @throws CheckPointException raised if the check point file is corrupted
      */
     private void setup() throws CheckPointException {
         gh = new GraphHopperInstance();
@@ -130,6 +141,7 @@ public class ControllerGH {
 
     /**
      * start of the process
+     * run the setup and then the process function in order to compute the processing
      */
     public void computeDump() {
         try {

@@ -1,14 +1,13 @@
 package clusterization;
 
 import junit.framework.TestCase;
-import location_iq.Point;
+import objects.Point;
 import util.Distance;
 import util.EuclideanDistance;
 import util.Util;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 public class KMeansTest extends TestCase {
     private static final int NUMBER_OF_POINTS = 20;

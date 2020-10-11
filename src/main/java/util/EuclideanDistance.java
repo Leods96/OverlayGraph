@@ -1,6 +1,6 @@
 package util;
 
-import location_iq.Point;
+import objects.Point;
 
 /**
  * Calculates the distance between two items using the Euclidean formula.

@@ -1,7 +1,7 @@
-package overpass;
+package external_api;
 
 import junit.framework.TestCase;
-import location_iq.exceptions.BadResponseException;
+import external_api.exceptions.BadResponseException;
 import org.json.JSONObject;
 
 import java.io.FileWriter;

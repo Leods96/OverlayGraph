@@ -1,4 +1,4 @@
-package location_iq;
+package input_output;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
@@ -12,29 +12,23 @@ import java.util.Map;
 
 public class ExternalCSVDump extends ExternalDumpManager {
     private static final String EXTENSION = ".csv";
-    //private static final String[] HEADERS_GH = {"Code","Time","Distance","Route"};
-    //private static final String[] HEADERS_LIQ = {"Code","Summary","Route"};
-    private static final String[] HEADERS_GH = {"Code","Time","Distance"};
-    private static final String[] HEADERS_LIQ = {"Code","Summary"};
+    private static final String[] HEADERS = {"Code","Time","Distance"};
 
-    private String[] HEADERS;
-    private boolean usingGH;
     private ArrayList<String[]> csvFileObject = null;
     private Iterator<CSVRecord> records = null;
     private boolean sourceDataParsed = false;
     private boolean sourceDataWritten = false;
     private String[] sourceInfo;
 
-    public ExternalCSVDump (String path, boolean gh){
+    public ExternalCSVDump (String path){
         super(path);
-        if(gh)
-            HEADERS = HEADERS_GH;
-        else
-            HEADERS = HEADERS_LIQ;
-        this.usingGH = gh;
         csvFileObject = new ArrayList<>();
     }
 
+    /**
+     * Write the data to the file
+     */
+    @Override
     public ExternalDumpManager writeDump() throws IOException {
         boolean append = new File(path + file + EXTENSION).exists();
         FileWriter out = new FileWriter(path + file + EXTENSION, append);
@@ -49,13 +43,18 @@ public class ExternalCSVDump extends ExternalDumpManager {
             for (String[] elem : csvFileObject)
                 printer.printRecord(elem);
         } finally {
-            printer.close();
+            if(printer != null)
+                printer.close();
+            out.close();
             sourceDataWritten = false;
         }
         csvFileObject.clear();
         return this;
     }
 
+    /**
+     * Save the source point information that will be written at the beginning of the file
+     */
     public ExternalDumpManager saveSourceInfo(String code, String latitude, String longitude) {
         sourceInfo = new String[3];
         sourceInfo[0] = code;
@@ -65,7 +64,14 @@ public class ExternalCSVDump extends ExternalDumpManager {
         return this;
     }
 
+    /**
+     * Manage the failed request from GH
+     * @param object Contains the error message
+     * @param code Destination ID
+     */
+    @Override
     public ExternalDumpManager saveData(Map object, String code) {
+        //TODO the else is useless -> for locIQ
         String[] temp = new String[3];
         temp[0] = code;
         if(object.containsKey("message")){
@@ -79,6 +85,12 @@ public class ExternalCSVDump extends ExternalDumpManager {
         return this;
     }
 
+    /**
+     * save the data to be written into a temporal arrayList that will be written into the file by the
+     * writeDump() method
+     * @param object Map that contains the data to be saved
+     * @param code Identifier of the destination
+     */
     public ExternalDumpManager saveDataForGH(Map object, String code) {
         //TODO modified -> not using the route -> is to heavy
         String[] temp = new String[3];
@@ -90,6 +102,10 @@ public class ExternalCSVDump extends ExternalDumpManager {
         return this;
     }
 
+    /**
+     * Create an iterator to parse the file
+     * @param file name of the file
+     */
     public ExternalDumpManager createParserFile(String file) throws IOException{
         Reader in = new FileReader(path + file);
         this.records = CSVFormat.DEFAULT
@@ -101,6 +117,11 @@ public class ExternalCSVDump extends ExternalDumpManager {
         return this;
     }
 
+    /**
+     * Parse the first line of the file that contains the source information
+     * @return a Map containing the source information if everything is ok, null if there is not the line
+     * or the information are already parsed
+     */
     public Map<String, Object> parseSourceInfo() {
         if(records.hasNext() && !sourceDataParsed){
             sourceDataParsed = true; //2 means that the info are read
@@ -114,7 +135,11 @@ public class ExternalCSVDump extends ExternalDumpManager {
         return null;
     }
 
-    public Map parseNext() {
+    /**
+     * Parse the next raw of the file
+     * @return A map containing the route information, null if the EOF is reached
+     */
+    public Map<String, String> parseNext() {
         if(records.hasNext()){
             CSVRecord record;
             if (!sourceDataParsed) {
@@ -123,7 +148,7 @@ public class ExternalCSVDump extends ExternalDumpManager {
                 sourceDataParsed = true;
             }
             record = records.next();
-            Map m = new HashMap();
+            Map<String, String> m = new HashMap<>();
             if ("Failed request".equalsIgnoreCase(record.get(1))) {
                 m.put("code", "Failed request");
             } else {

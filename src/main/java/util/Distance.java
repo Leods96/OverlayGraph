@@ -1,6 +1,6 @@
 package util;
 
-import location_iq.Point;
+import objects.Point;
 
 public interface Distance {
 

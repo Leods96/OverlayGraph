@@ -1,7 +1,7 @@
 package overlay_matrix_graph;
 
-import location_iq.ExternalCSVDump;
-import location_iq.Point;
+import input_output.ExternalCSVDump;
+import objects.Point;
 import overlay_matrix_graph.exceptions.NodeCodeNotInOverlayGraphException;
 import overlay_matrix_graph.exceptions.NodeNotInOverlayGraphException;
 import overlay_matrix_graph.supporters.NeighbourResponse;
@@ -125,7 +125,7 @@ public class MatrixOverlayGraphManager {
      * @param path address of the directory with the dump files
      */
     private void parse(String path) {
-        dump = new ExternalCSVDump(path, true);
+        dump = new ExternalCSVDump(path);
         File folder = new File(path);
         File[] files = folder.listFiles();
         for(File f : files)

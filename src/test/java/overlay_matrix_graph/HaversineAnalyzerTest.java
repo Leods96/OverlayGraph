@@ -2,7 +2,7 @@ package overlay_matrix_graph;
 
 import graph_hopper.GraphHopperInstance;
 import junit.framework.TestCase;
-import location_iq.Point;
+import objects.Point;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;

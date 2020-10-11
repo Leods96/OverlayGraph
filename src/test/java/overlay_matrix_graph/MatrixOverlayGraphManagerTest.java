@@ -3,9 +3,9 @@ package overlay_matrix_graph;
 import com.graphhopper.PathWrapper;
 import graph_hopper.GraphHopperInstance;
 import junit.framework.TestCase;
-import location_iq.ExcelReader;
-import location_iq.exceptions.CellTypeException;
-import location_iq.Point;
+import input_output.ExcelReader;
+import input_output.exceptions.CellTypeException;
+import objects.Point;
 import overlay_matrix_graph.exceptions.NodeCodeNotInOverlayGraphException;
 
 import java.io.IOException;

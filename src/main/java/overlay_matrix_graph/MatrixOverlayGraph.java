@@ -1,6 +1,6 @@
 package overlay_matrix_graph;
 
-import location_iq.Point;
+import objects.Point;
 import overlay_matrix_graph.exceptions.NodeCodeNotInOverlayGraphException;
 import overlay_matrix_graph.exceptions.NodeNotInOverlayGraphException;
 import overlay_matrix_graph.supporters.*;

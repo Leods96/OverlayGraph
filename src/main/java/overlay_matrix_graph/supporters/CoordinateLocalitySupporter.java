@@ -1,6 +1,6 @@
 package overlay_matrix_graph.supporters;
 
-import location_iq.Point;
+import objects.Point;
 
 import java.util.*;
 import java.util.stream.Collectors;
