@@ -2,6 +2,9 @@ package overlay_matrix_graph.supporters;
 
 import objects.Point;
 
+/**
+ * This object represent a neighbour with his respective distance from a point
+ */
 public class NeighbourResponse {
 
     private Point point;

@@ -6,7 +6,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class KdTreeSupporter implements Serializable, Supporter{
+public class KdTreeSupporter implements Serializable, Supporter {
 
     private final KdNode tree;
     private final boolean splitOnLatitude;

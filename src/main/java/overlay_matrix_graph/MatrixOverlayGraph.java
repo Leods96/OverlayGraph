@@ -16,9 +16,9 @@ public class MatrixOverlayGraph implements Serializable {
     //private LocalityGraph localitySupporter;
     private LinearSupporter linearSupporter;
 
+    //TODO make these params
     private static final boolean SPLIT_LATITUDE = true;
     private static final int NUMBER_OF_NN = 20;
-
     private boolean useKdTree;
 
     public MatrixOverlayGraph() {
@@ -40,7 +40,7 @@ public class MatrixOverlayGraph implements Serializable {
     }
 
     /**
-     * Create the quadtree from the list of point into the graph
+     * Create the supporter from the list of point into the graph
      */
     public void createSupporters(boolean useKdTree) {
         this.useKdTree = useKdTree;
@@ -89,6 +89,8 @@ public class MatrixOverlayGraph implements Serializable {
         this.localitySupporter = support;
     }*/
 
+
+    //TODO make these two method only one
     public List<NeighbourResponse> searchNeighbour(Point p) {
         if(useKdTree)
             return kdTreeSupporter.searchNeighbours(p, NUMBER_OF_NN);

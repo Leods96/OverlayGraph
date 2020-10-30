@@ -31,7 +31,7 @@ public class CountryInfoRequest {
      * Perform the request
      * @return JSONObject containing the data
      */
-    public JSONObject executeRequest() {
+    public JSONObject executeRequest() throws IOException {
         HttpsURLConnection con = null;
         try {
             con = (HttpsURLConnection) url.openConnection();
@@ -42,7 +42,7 @@ public class CountryInfoRequest {
         }
     }
 
-    private static JSONObject getResponse(HttpsURLConnection con) {
+    private static JSONObject getResponse(HttpsURLConnection con) throws IOException{
         if (con != null) {
             BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream()));
             StringBuilder sb = new StringBuilder();

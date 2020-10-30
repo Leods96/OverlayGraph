@@ -20,7 +20,7 @@ public class ExternalCSVDump extends ExternalDumpManager {
     private boolean sourceDataWritten = false;
     private String[] sourceInfo;
 
-    public ExternalCSVDump (String path){
+    public ExternalCSVDump (String path) {
         super(path);
         csvFileObject = new ArrayList<>();
     }

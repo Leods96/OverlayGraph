@@ -13,7 +13,7 @@ public class LocalityGraphTest extends TestCase {
 
     public void testLocalityGraph() {
         try {
-            List<Point> points = Util.GenerateRandomPoints(50);
+            List<Point> points = Util.generateRandomPoints(50);
             LocalityGraph localityGraph = new LocalityGraph(points, 4);
             System.out.println("Points dim : " + points.size() + " - Locality dim : " + localityGraph.getDimension());
             if(points.size() != localityGraph.getDimension())

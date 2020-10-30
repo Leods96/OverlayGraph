@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Random;
 
 public class Util {
-    public static List<Point> GenerateRandomPoints(int dimension) {
+    public static List<Point> generateRandomPoints(int dimension) {
         List<Point> points = new ArrayList<>();
         Random random = new Random();
         for(int i = 0; i < dimension; i++)
@@ -17,13 +17,13 @@ public class Util {
         return points;
     }
 
-    public static List<Point> GenerateRandomPoints(int dimension, int latMin, int latMax, int lonMin, int lonMax) {
+    public static List<Point> generateRandomPoints(int dimension, int latMin, int latMax, int lonMin, int lonMax) {
         List<Point> points = new ArrayList<>();
         Random random = new Random();
         int latDiff = latMax - latMin;
         int lonDiff = lonMax - lonMin;
         for(int i = 0; i < dimension; i++)
-            points.add(new Point(latMin + latDiff * random.nextDouble(),
+            points.add(new Point(String.valueOf(i),latMin + latDiff * random.nextDouble(),
                     lonMin + lonDiff * random.nextDouble()));
         return points;
     }
@@ -31,18 +31,26 @@ public class Util {
     public static void creationOfDump(String fromFile, int fromSheetNum,
                                               String toFile, int toSheetNum, String dumpFolder,
                                               String configFolder) {
-        ControllerGH controller = new ControllerGH(fromFile, fromSheetNum, toFile,
-                toSheetNum, dumpFolder, configFolder);
-        System.out.println("Starting with the dump computation...");
-        controller.computeDump();
-        System.out.println("Dump computed");
+        try {
+            ControllerGH controller = new ControllerGH(fromFile, fromSheetNum, toFile,
+                    toSheetNum, dumpFolder, configFolder);
+            System.out.println("Starting with the dump computation...");
+            controller.computeDump();
+            System.out.println("Dump computed");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public static MatrixOverlayGraphManager creationOfOverlayGraph(String dumpFolder, String graphFolder, boolean tree) {
         MatrixOverlayGraphManager graphManager = null;
         System.out.println("Starting with the graph creation...");
         graphManager = new MatrixOverlayGraphManager();
-        graphManager.loadOrCreateGraph(graphFolder, dumpFolder, false);
+        try {
+            graphManager.loadOrCreateGraph(graphFolder, dumpFolder, false);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         System.out.println("OverlayGraph created");
         return graphManager;
     }

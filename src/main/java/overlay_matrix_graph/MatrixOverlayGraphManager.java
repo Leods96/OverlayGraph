@@ -56,14 +56,6 @@ public class MatrixOverlayGraphManager {
         this.graphPath = graphPath;
         if(graphPath == null)
             System.err.println("Null path");
-        else {
-            File dir = new File(graphPath + MAIN_PATH);
-            if(!dir.exists()) {
-                dir.mkdir();
-                //TODO questo va fatto nella creazione del grafo non nel settaggio del path
-                System.out.println("Directory to save the graph created");
-            }
-        }
     }
 
     /**
@@ -80,13 +72,13 @@ public class MatrixOverlayGraphManager {
     /**
      * Set the path and call loadOrCreateGraph
      */
-    public void loadOrCreateGraph(String graphPath, String dumpPath) {
+    public void loadOrCreateGraph(String graphPath, String dumpPath) throws IOException, ClassNotFoundException {
         setGraphPath(graphPath);
         setDumpsDirectoryToCreateGraph(dumpPath);
         loadOrCreateGraph();
     }
 
-    public void loadOrCreateGraph(String graphPath, String dumpPath, boolean kdTreeSupporterActive) {
+    public void loadOrCreateGraph(String graphPath, String dumpPath, boolean kdTreeSupporterActive) throws IOException, ClassNotFoundException {
         if(kdTreeSupporterActive)
             setUseOfKdTree();
         setGraphPath(graphPath);
@@ -98,14 +90,13 @@ public class MatrixOverlayGraphManager {
      * If a file with the graph exists this will be loaded, otherwise the graph will be created
      * parsing the dump file and then will be written
      */
-    public void loadOrCreateGraph() {
-        if(new File(graphPath + OVERLAY_GRAPH).exists())
+    public void loadOrCreateGraph() throws IOException, ClassNotFoundException{
+        if(graphPath != null && new File(graphPath).exists())
             loadGraph();
         else {
             System.out.println("No file with the graph exists");
             createGraph();
         }
-        //graph.print();
     }
 
     /**
@@ -206,15 +197,13 @@ public class MatrixOverlayGraphManager {
     /**
      * Read the graph from the external file
      */
-    public void loadGraph() {
+    public void loadGraph() throws IOException, ClassNotFoundException{
         System.out.println("The overlay graph will be loaded from an external file");
-        try(FileInputStream fis = new FileInputStream(graphPath + OVERLAY_GRAPH);
+        try(FileInputStream fis = new FileInputStream(graphPath);
             ObjectInputStream ois = new ObjectInputStream(fis))
         {
             graph = (MatrixOverlayGraph) ois.readObject();
             System.out.println("Overlay graph loaded");
-        } catch (Exception e) {
-            e.printStackTrace();
         }
         loadSupporters();
     }
@@ -223,6 +212,7 @@ public class MatrixOverlayGraphManager {
      * Read the supporters from the external file
      */
     public void loadSupporters() {
+        //TODO check se kd esiste allora uso nel load
         try {
             try (FileInputStream fis = new FileInputStream(graphPath + (kdTreeSupporterActived ? KDTREE_SUPPORTER_PATH : LINEAR_SUPPORTER));
                  ObjectInputStream ois = new ObjectInputStream(fis)) {

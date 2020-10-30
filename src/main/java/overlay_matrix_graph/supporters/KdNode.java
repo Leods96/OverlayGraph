@@ -146,23 +146,23 @@ public class KdNode implements Serializable {
         }
         if(splitOnLatitude) {
             if(point.getLatitude() < node.getLatitude()) {
-                bests = leftChild.searchNeighbours(point, bests, !splitOnLatitude, size);
-                if(getWorse(bests).getDistance() - calc.calculate(point, new Point(node.getLatitude(), point.getLongitude())) > 0)
-                    return rightChild.searchNeighbours(point, bests, !splitOnLatitude, size);
+                bests = leftChild.searchNeighbours(point, bests, !splitOnLatitude, size, angle);
+                if(bests.isEmpty() || getWorse(bests).getDistance() - calc.calculate(point, new Point(node.getLatitude(), point.getLongitude())) > 0)
+                    return rightChild.searchNeighbours(point, bests, !splitOnLatitude, size, angle);
             } else {
-                bests = rightChild.searchNeighbours(point, bests, !splitOnLatitude, size);
-                if(getWorse(bests).getDistance() - calc.calculate(point, new Point(node.getLatitude(), point.getLongitude())) > 0)
-                    return leftChild.searchNeighbours(point, bests, !splitOnLatitude, size);
+                bests = rightChild.searchNeighbours(point, bests, !splitOnLatitude, size, angle);
+                if(bests.isEmpty() || getWorse(bests).getDistance() - calc.calculate(point, new Point(node.getLatitude(), point.getLongitude())) > 0)
+                    return leftChild.searchNeighbours(point, bests, !splitOnLatitude, size, angle);
             }
         } else {
             if(point.getLongitude() < node.getLongitude()) {
-                bests = leftChild.searchNeighbours(point, bests, !splitOnLatitude, size);
-                if(getWorse(bests).getDistance() - calc.calculate(point, new Point(point.getLatitude(), node.getLongitude())) > 0)
-                    return rightChild.searchNeighbours(point, bests, !splitOnLatitude, size);
+                bests = leftChild.searchNeighbours(point, bests, !splitOnLatitude, size, angle);
+                if(bests.isEmpty() || getWorse(bests).getDistance() - calc.calculate(point, new Point(point.getLatitude(), node.getLongitude())) > 0)
+                    return rightChild.searchNeighbours(point, bests, !splitOnLatitude, size, angle);
             } else {
-                bests = rightChild.searchNeighbours(point, bests, !splitOnLatitude, size);
-                if(getWorse(bests).getDistance() - calc.calculate(point, new Point(point.getLatitude(), node.getLongitude())) > 0)
-                    return leftChild.searchNeighbours(point, bests, !splitOnLatitude, size);
+                bests = rightChild.searchNeighbours(point, bests, !splitOnLatitude, size, angle);
+                if(bests.isEmpty() || getWorse(bests).getDistance() - calc.calculate(point, new Point(point.getLatitude(), node.getLongitude())) > 0)
+                    return leftChild.searchNeighbours(point, bests, !splitOnLatitude, size, angle);
             }
         }
         return bests;

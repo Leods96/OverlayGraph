@@ -15,7 +15,7 @@ public class KMeansTest extends TestCase {
     private static final Distance DISTANCE = new EuclideanDistance();
 
     public void testAllPointsNearToAssignedCluster() {
-        ClusterSet clusters = KMeans.compute(Util.GenerateRandomPoints(NUMBER_OF_POINTS), K, DISTANCE, 20);
+        ClusterSet clusters = KMeans.compute(Util.generateRandomPoints(NUMBER_OF_POINTS), K, DISTANCE, 20);
         assertEquals(K, clusters.getClusterSet().keySet().size());
         System.out.println(clusters);
         List<Point> centroids = new ArrayList<>(clusters.getClusterSet().keySet());

@@ -30,7 +30,7 @@ public class QuadTreeNodeTest extends TestCase {
 
     @Before
     public void treeCreation() {
-        points.addAll(Util.GenerateRandomPoints(NUMBER_OF_POINTS));
+        points.addAll(Util.generateRandomPoints(NUMBER_OF_POINTS));
         tree = new QuadTreeNode(points);
     }
 
@@ -38,7 +38,7 @@ public class QuadTreeNodeTest extends TestCase {
     public void testTreeSearchCorrectnessAndTime() {
         treeCreation();
         tree.printTree();
-        Point pointToSearch = Util.GenerateRandomPoints(1).get(0);
+        Point pointToSearch = Util.generateRandomPoints(1).get(0);
         System.out.println("\nPoint to be searched: " + pointToSearch);
         double standardTime = System.nanoTime();
         Point standardSerachPoint = standardSearch(pointToSearch, points);
@@ -75,7 +75,7 @@ public class QuadTreeNodeTest extends TestCase {
     public void testOrderIntoTheLeaf() {
         treeCreation();
         tree.printTree();
-        Point pointToSearch = Util.GenerateRandomPoints(1).get(0);
+        Point pointToSearch = Util.generateRandomPoints(1).get(0);
         ArrayList<Point> treeSearchPoint = new ArrayList<>(treeSearch(pointToSearch, tree));
         HeartDistance calculator = new HeartDistance();
         for(int i = 0; i < treeSearchPoint.size() - 1; i++)

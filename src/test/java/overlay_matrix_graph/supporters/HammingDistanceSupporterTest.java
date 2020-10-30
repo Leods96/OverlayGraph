@@ -46,7 +46,7 @@ public class HammingDistanceSupporterTest extends TestCase {
             fail();
         }
         LinearSupporter linear = new LinearSupporter(points);
-        List<Point> pointsToBeTested = Util.GenerateRandomPoints(100, 36, 46, 7, 18);
+        List<Point> pointsToBeTested = Util.generateRandomPoints(100, 36, 46, 7, 18);
         long time = System.nanoTime();
         for(Point pointToBeTested : pointsToBeTested) {
             List<Point> linearResult = linear.searchNeighbours(pointToBeTested, 4).stream().map(NeighbourResponse::getPoint).collect(Collectors.toList());

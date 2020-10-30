@@ -5,7 +5,4 @@ public class NodeCodeNotInOverlayGraphException extends Exception {
         super(message);
     }
 
-    public NodeCodeNotInOverlayGraphException() {
-        super();
-    }
 }

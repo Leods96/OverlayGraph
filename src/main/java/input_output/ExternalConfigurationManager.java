@@ -7,6 +7,7 @@ import java.util.Scanner;
 
 /**
  * Object that manage the access to an external file used to save and read the check-points
+ * It is useful during long computation to split the work into different steps
  */
 public class ExternalConfigurationManager {
     private static final String CHECKPOINT_FILE_NAME = "checkPoint.txt";

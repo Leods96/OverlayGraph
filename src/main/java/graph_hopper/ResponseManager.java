@@ -1,4 +1,4 @@
-package input_output;
+package graph_hopper;
 
 import com.graphhopper.PathWrapper;
 

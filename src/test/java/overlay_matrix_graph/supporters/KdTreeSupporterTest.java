@@ -19,6 +19,8 @@ public class KdTreeSupporterTest extends TestCase {
     private static final String PATH_TO_READ = "C:\\Users\\leo\\Desktop\\ThesisProject1.0\\Addresses\\CountryInformation\\FilteredNodes\\FilteredFilteredResult.xlsx";
     private static final String PATH_TO_TEST = "C:\\Users\\leo\\Desktop\\ThesisProject1.0\\Addresses\\geocodedAddresses.xlsx";
 
+
+
     public void testKdTreeSupporterCorrectness() {
         ArrayList<Point> points = new ArrayList<>();
         XSSFWorkbook workbook = null;
@@ -103,7 +105,7 @@ public class KdTreeSupporterTest extends TestCase {
 
     public void testTreeCreation() {
         try {
-            KdTreeSupporter tree = new KdTreeSupporter(Util.GenerateRandomPoints(10), true);
+            KdTreeSupporter tree = new KdTreeSupporter(Util.generateRandomPoints(10), true);
         } catch (Exception e) {
             e.printStackTrace();
             fail();
@@ -175,13 +177,43 @@ public class KdTreeSupporterTest extends TestCase {
         }
     }
 
+    public void testKNNCorrectnessTestOnRandomPoints() {
+        List<Point> points = Util.generateRandomPoints(10, 0, 10, 0 , 10);
+        List<Point> pointsToBeTested = Util.generateRandomPoints(10, 0, 10, 0 , 10);
+        KdTreeSupporter tree = new KdTreeSupporter(points, true);
+        LinearSupporter linear = new LinearSupporter(points);
+
+        System.out.print("Points: " + points + "\n\n");
+
+        for(Point point : pointsToBeTested) {
+            ArrayList<Point> linearResult = linear.searchNeighbours(point, 4).stream().map(NeighbourResponse::getPoint).collect(Collectors.toCollection(ArrayList::new));
+            ArrayList<Point> treeResult = tree.searchNeighbours(point, 4).stream().map(NeighbourResponse::getPoint).collect(Collectors.toCollection(ArrayList::new));
+            System.out.println("Point : " + point);
+            System.out.println("Linear result: " + linearResult);
+            System.out.println("Tree result: " + treeResult);
+
+            for(Point p : linearResult) {
+                for(Point p1 : treeResult) {
+                    if(p.sameCoordinates(p1)) {
+                        treeResult.remove(p1);
+                        break;
+                    }
+
+                }
+            }
+            if(!treeResult.isEmpty())
+                fail();
+        }
+    }
+
     public void testKNNAngleCorrectnessTest() {
         ArrayList<Point> points = new ArrayList<>();
         XSSFWorkbook workbook = null;
         try (FileInputStream file = new FileInputStream(new File(PATH_TO_READ)))
         {
             workbook = new XSSFWorkbook(file);
-        } catch(IOException e) {
+        }
+        catch(IOException e) {
             System.err.println("Test: Error opening the file");
             fail();
         }
@@ -222,6 +254,35 @@ public class KdTreeSupporterTest extends TestCase {
         for(Point point : pointsToBeTested) {
             ArrayList<Point> linearResult = new ArrayList<>(linear.searchNeighbours(point, 4, 50.0).stream().map(NeighbourResponse::getPoint).collect(Collectors.toList()));
             ArrayList<Point> treeResult = new ArrayList<>(tree.searchNeighbours(point, 4, 50.0).stream().map(NeighbourResponse::getPoint).collect(Collectors.toList()));
+            System.out.println("Point : " + point);
+            System.out.println("Linear result: " + linearResult);
+            System.out.println("Tree result: " + treeResult);
+
+            for(Point p : linearResult) {
+                for(Point p1 : treeResult) {
+                    if(p.sameCoordinates(p1)) {
+                        treeResult.remove(p1);
+                        break;
+                    }
+
+                }
+            }
+            if(!treeResult.isEmpty())
+                fail();
+        }
+    }
+
+    public void testKNNAngleCorrectnessTestOnRandomPoints() {
+        List<Point> points = Util.generateRandomPoints(10, 0, 10, 0 , 10);
+        List<Point> pointsToBeTested = Util.generateRandomPoints(10, 0, 10, 0 , 10);
+        KdTreeSupporter tree = new KdTreeSupporter(points, true);
+        LinearSupporter linear = new LinearSupporter(points);
+
+        System.out.print("Points: " + points + "\n\n");
+
+        for(Point point : pointsToBeTested) {
+            ArrayList<Point> linearResult = linear.searchNeighbours(point, 4, 50).stream().map(NeighbourResponse::getPoint).collect(Collectors.toCollection(ArrayList::new));
+            ArrayList<Point> treeResult = tree.searchNeighbours(point, 4, 50).stream().map(NeighbourResponse::getPoint).collect(Collectors.toCollection(ArrayList::new));
             System.out.println("Point : " + point);
             System.out.println("Linear result: " + linearResult);
             System.out.println("Tree result: " + treeResult);

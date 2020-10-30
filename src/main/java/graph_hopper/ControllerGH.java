@@ -1,6 +1,7 @@
 package graph_hopper;
 
 import com.graphhopper.PathWrapper;
+import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
 import input_output.*;
 import input_output.exceptions.CellTypeException;
 import input_output.exceptions.CheckPointException;
@@ -9,12 +10,9 @@ import org.json.JSONObject;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+import static controllers.Controller.ghPath;
+
 public class ControllerGH {
-    //TODO make these a custom params
-    private static final String BASE_PATH = "C:\\Users\\leo\\Desktop\\ThesisProject1.0\\Addresses\\";
-    private static final String FILE = BASE_PATH + "geocodedAddresses.xlsx";
-    private static final String DUMP_FOLDER = BASE_PATH + "GHDumpFolder\\Depot-Customer\\";
-    private static final String CONFIGURATION_FOLDER = BASE_PATH + "configurationData\\";
 
     private ExcelReader fromReader;
     private ExcelReader toReader;
@@ -31,24 +29,22 @@ public class ControllerGH {
      * the distances
      * Creation of an ExternalDumpManager object to write the results into the dump folder
      * Creation of ExternalConfigurationManager useful for the checkPoint, if null skip the configuration
+     * @param fromFile file from which read the source
+     * @param toFile  file from which read the destination (generally same as fromFile)
+     * @param dumpFolder path where the dump of the computation is written
+     * @param configurationFile path where to read the conf file
      */
-    public ControllerGH(String fromFile, int sheetFromNum, String toFile, int sheetToNum, String dumpFolder, String configurationFile){
+    public ControllerGH(String fromFile, int sheetFromNum, String toFile, int sheetToNum, String dumpFolder, String configurationFile) throws IOException {
         rm = new ResponseManager();
-        try {
-            this.fromReader = new ExcelReader(fromFile);
-            this.toReader = new ExcelReader(toFile);
-            this.dumpManager = new ExternalCSVDump(dumpFolder);
-            if(configurationFile != null)
-                this.configurationManager = new ExternalConfigurationManager(configurationFile);
-            else
-                this.configurationManager = null;
-            this.sheetFromNum = sheetFromNum;
-            this.sheetToNum = sheetToNum;
-        } catch(IOException e) {
-            //TODO system exit
-            e.printStackTrace();
-            System.exit(-1);
-        }
+        this.fromReader = new ExcelReader(fromFile);
+        this.toReader = new ExcelReader(toFile);
+        this.dumpManager = new ExternalCSVDump(dumpFolder);
+        if(configurationFile != null)
+            this.configurationManager = new ExternalConfigurationManager(configurationFile);
+        else
+            this.configurationManager = null;
+        this.sheetFromNum = sheetFromNum;
+        this.sheetToNum = sheetToNum;
     }
 
     /**
@@ -127,7 +123,7 @@ public class ControllerGH {
      */
     private void setup() throws CheckPointException {
         gh = new GraphHopperInstance();
-        gh.preprocessing();
+        gh.preprocessing(ghPath);
         try {
             CheckPoint cp = configurationManager.getCheckPoint();
             fromReader.setSheetWithIndex(this.sheetFromNum).initializeIterator(cp.getFrom());
@@ -143,18 +139,11 @@ public class ControllerGH {
      * start of the process
      * run the setup and then the process function in order to compute the processing
      */
-    public void computeDump() {
-        try {
-            setup();
-            long time = System.nanoTime();
-            process();
-            System.out.println("Elapsed time in second: " + (System.nanoTime()-time)/1000000000);
-        } catch (CheckPointException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            System.err.println("Problem writing the dump");
-            e.printStackTrace();
-        }
+    public void computeDump() throws CheckPointException, IOException {
+        setup();
+        long time = System.nanoTime();
+        process();
+        System.out.println("Elapsed time in second: " + (System.nanoTime()-time)/1000000000);
     }
 
 }

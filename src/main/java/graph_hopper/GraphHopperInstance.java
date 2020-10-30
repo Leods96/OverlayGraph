@@ -19,7 +19,21 @@ public class GraphHopperInstance {
      * Create the graph or load it from the memory
      */
     public void preprocessing() {
+        //TODO remove it...used for test
         graphHopper = new GraphHopper().setGraphHopperLocation(WORK_DIR) // "gh-car"
+                .setEncodingManager(new EncodingManager(VEHICLE)) // "car"
+                .setOSMFile(OSM_FILE)
+                .forServer();
+        System.out.println("Creation or Load of the graph hopper graph..");
+        graphHopper.importOrLoad();
+        System.out.println("graph hopper ready");
+    }
+
+    /**
+     * Create the graph or load it from the memory
+     */
+    public void preprocessing(String workDir) {
+        graphHopper = new GraphHopper().setGraphHopperLocation(workDir) // "gh-car"
                 .setEncodingManager(new EncodingManager(VEHICLE)) // "car"
                 .setOSMFile(OSM_FILE)
                 .forServer();
@@ -32,7 +46,7 @@ public class GraphHopperInstance {
      * Make the route between origin and destination
      * @param origin array with geo_coordinate of the origin location
      * @param destination array with geo_coordinate of the destination location
-     * @return
+     * @return PathWrapper object with the data of the route
      */
     public PathWrapper routing(double[] origin, double[] destination){
         GHRequest request = new GHRequest(origin[0], origin[1], destination[0], destination[1]);

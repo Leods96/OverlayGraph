@@ -34,6 +34,7 @@ public class LinearSupporter implements Serializable, Supporter {
         return bests;
     }
 
+    //TODO se nel cono non esitono punti? va usato un altro approccio
     public List<NeighbourResponse> searchNeighbours(Point point, int size, double angle) {
         HeartDistance calculator = new HeartDistance();
         bests = new ArrayList<>();
