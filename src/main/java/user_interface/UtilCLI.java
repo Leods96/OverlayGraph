@@ -2,7 +2,7 @@ package user_interface;
 
 import java.util.List;
 
-import static user_interface.CLI.textIO;
+import static user_interface.CLI.*;
 
 public interface UtilCLI {
 
@@ -17,11 +17,11 @@ public interface UtilCLI {
      * Given a list print all his element as
      * @param list
      */
-    static void printChoiceAmongList(List list) {
+    static void printChoiceAmongList(List<String> list) {
         int count = 0;
-        System.out.println("List of graphs: ");
+        textTerminal.println("\nList: ");
         for(Object l : list)
-            System.out.println(++count + " - " + l);
+            textTerminal.println(++count + " - " + l);
     }
 
     /**
@@ -31,7 +31,7 @@ public interface UtilCLI {
      * @return 0 if the command corresponds to the exit, the command if satisfy the condition
      */
     static int inputParser(int max) {
-        String choice = textIO.newStringInputReader().read("Command");
+        String choice = textIO.newStringInputReader().read("input: ");
         try {
             int result = Integer.parseInt(choice);
             if(max == -1 || (result > 0 && result <= max))
@@ -40,8 +40,22 @@ public interface UtilCLI {
             if(exitCondition(choice))
                 return 0;
         }
-        System.err.println("Unacceptable input");
+        printError("Unacceptable input");
         return inputParser(max);
+    }
+
+    static double inputParserDouble(int max) {
+        String choice = textIO.newStringInputReader().read("input: ");
+        try {
+            double result = Double.parseDouble(choice);
+            if(max == -1 || (result > 0 && result <= max))
+                return result;
+        } catch (Exception e) {
+            if(exitCondition(choice))
+                return 0;
+        }
+        printError("Unacceptable input");
+        return inputParserDouble(max);
     }
 
     /**
@@ -58,8 +72,14 @@ public interface UtilCLI {
             return -1;
         if(exitCondition(choice))
             return 0;
-        System.err.println("Unacceptable input");
+        printError("Unacceptable input");
         return parseInputYesOrNo();
+    }
+
+    static void printError(String message) {
+        textTerminal.getProperties().setPromptColor(ERROR_COLOR);
+        textTerminal.println(message);
+        textTerminal.getProperties().setPromptColor(TERMINAL_COLOR);
     }
 
 }

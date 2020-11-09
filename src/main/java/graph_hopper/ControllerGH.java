@@ -1,12 +1,11 @@
 package graph_hopper;
 
 import com.graphhopper.PathWrapper;
-import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
 import input_output.*;
 import input_output.exceptions.CellTypeException;
 import input_output.exceptions.CheckPointException;
+import objects.CheckPoint;
 import objects.Point;
-import org.json.JSONObject;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
@@ -14,14 +13,14 @@ import static controllers.Controller.ghPath;
 
 public class ControllerGH {
 
-    private ExcelReader fromReader;
-    private ExcelReader toReader;
-    private int sheetFromNum;
-    private int sheetToNum;
-    private ExternalCSVDump dumpManager;
-    private ExternalConfigurationManager configurationManager;
-    private final ResponseManager rm;
+    private final ExcelReader fromReader;
+    private final ExcelReader toReader;
+    private final int sheetFromNum;
+    private final int sheetToNum;
+    private final ExternalCSVDump dumpManager;
+    private final ExternalCheckPointManager configurationManager;
     private GraphHopperInstance gh;
+    private boolean useCheckPoint;
 
     /**
      * Constructor for the ControllerGH Object
@@ -35,12 +34,11 @@ public class ControllerGH {
      * @param configurationFile path where to read the conf file
      */
     public ControllerGH(String fromFile, int sheetFromNum, String toFile, int sheetToNum, String dumpFolder, String configurationFile) throws IOException {
-        rm = new ResponseManager();
         this.fromReader = new ExcelReader(fromFile);
         this.toReader = new ExcelReader(toFile);
         this.dumpManager = new ExternalCSVDump(dumpFolder);
         if(configurationFile != null)
-            this.configurationManager = new ExternalConfigurationManager(configurationFile);
+            this.configurationManager = new ExternalCheckPointManager();
         else
             this.configurationManager = null;
         this.sheetFromNum = sheetFromNum;
@@ -79,12 +77,13 @@ public class ControllerGH {
             }
             dumpManager.saveSourceInfo(from.getCode(), from.getLatitude().toString(), from.getLongitude().toString());
             dumpManager.writeDump();
-            try {
-                configurationManager.createCheckPoint(cp.getFrom(), cp.getTo());
-            } catch (Exception e) {
-                System.err.println("Check Point file not created for exception");
-                e.printStackTrace();
-            }
+            if(useCheckPoint)
+                try {
+                    configurationManager.createCheckPoint(cp.getFrom(), cp.getTo());
+                } catch (Exception e) {
+                    System.err.println("Check Point file not created for exception");
+                    e.printStackTrace();
+                }
             toReader.initializeIterator();
             System.out.println("This nodes is completed in: " + (System.nanoTime()-time)/1000000000 + " seconds");
         }
@@ -96,7 +95,8 @@ public class ControllerGH {
      * @return CheckPoint, useful if we want to split the process
      */
     private CheckPoint standardRequest() {
-        String fromID = null, toID = null;
+        String fromID = null;
+        String toID = null;
         try {
             fromID = fromReader.getID();
             toID = toReader.getID();
@@ -105,9 +105,9 @@ public class ControllerGH {
                         new double[]{fromReader.getLatitude(), fromReader.getLongitude()},
                         new double[]{toReader.getLatitude(), toReader.getLongitude()}
                     );
-            dumpManager.saveDataForGH(rm.filterResponse(response), toID);
+            dumpManager.saveDataForGH(new ResponseManager(response), toID);
         } catch (RuntimeException e) {
-            dumpManager.saveData(new JSONObject().put("message",e.getMessage()).toMap(),toID);
+            dumpManager.saveData(new ResponseManager(e.getMessage()), toID);
         } catch (CellTypeException e) {
             System.err.println("Cell type exception reading rowFrom: " + fromReader.getRowNumber() + ", rowTo: " + toReader.getRowNumber());
             return null;
@@ -121,26 +121,34 @@ public class ControllerGH {
      * the reader will start from the beginning of the file
      * @throws CheckPointException raised if the check point file is corrupted
      */
-    private void setup() throws CheckPointException {
-        gh = new GraphHopperInstance();
-        gh.preprocessing(ghPath);
+    private void setupWithCheckPoint() throws CheckPointException {
         try {
             CheckPoint cp = configurationManager.getCheckPoint();
             fromReader.setSheetWithIndex(this.sheetFromNum).initializeIterator(cp.getFrom());
             toReader.setSheetWithIndex(this.sheetToNum).initializeIterator(cp.getTo());
         } catch (FileNotFoundException | NullPointerException e) {
             System.out.println("There isn't a CheckPoint file -> start from beginning");
-            fromReader.setSheetWithIndex(this.sheetFromNum).initializeIterator();
-            toReader.setSheetWithIndex(this.sheetToNum).initializeIterator();
+            standardSetup();
         }
+    }
+
+    private void standardSetup() {
+        fromReader.setSheetWithIndex(this.sheetFromNum).initializeIterator();
+        toReader.setSheetWithIndex(this.sheetToNum).initializeIterator();
     }
 
     /**
      * start of the process
      * run the setup and then the process function in order to compute the processing
      */
-    public void computeDump() throws CheckPointException, IOException {
-        setup();
+    public void computeDump(boolean useCheckPoint) throws CheckPointException, IOException {
+        this.useCheckPoint = useCheckPoint;
+        gh = new GraphHopperInstance();
+        gh.preprocessing(ghPath);
+        if(useCheckPoint)
+            setupWithCheckPoint();
+        else
+            standardSetup();
         long time = System.nanoTime();
         process();
         System.out.println("Elapsed time in second: " + (System.nanoTime()-time)/1000000000);

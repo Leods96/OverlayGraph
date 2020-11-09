@@ -1,5 +1,6 @@
 package input_output;
 
+import graph_hopper.ResponseManager;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
@@ -66,21 +67,15 @@ public class ExternalCSVDump extends ExternalDumpManager {
 
     /**
      * Manage the failed request from GH
-     * @param object Contains the error message
+     * @param response Contains the error message
      * @param code Destination ID
      */
     @Override
-    public ExternalDumpManager saveData(Map object, String code) {
-        //TODO the else is useless -> for locIQ
+    public ExternalDumpManager saveData(ResponseManager response, String code) {
         String[] temp = new String[3];
         temp[0] = code;
-        if(object.containsKey("message")){
-            temp[1] = "Failed request";
-            temp[2] = object.get("message").toString();
-        } else {
-            temp[1] = object.get("summary").toString();
-            temp[2] = object.get("routes").toString();
-        }
+        temp[1] = "Failed request";
+        temp[2] = response.getMessage();
         csvFileObject.add(temp);
         return this;
     }
@@ -88,16 +83,14 @@ public class ExternalCSVDump extends ExternalDumpManager {
     /**
      * save the data to be written into a temporal arrayList that will be written into the file by the
      * writeDump() method
-     * @param object Map that contains the data to be saved
+     * @param response ResponseManager object that contains data to be saved
      * @param code Identifier of the destination
      */
-    public ExternalDumpManager saveDataForGH(Map object, String code) {
-        //TODO modified -> not using the route -> is to heavy
+    public ExternalDumpManager saveDataForGH(ResponseManager response, String code) {
         String[] temp = new String[3];
         temp[0] = code;
-        temp[1] = object.get("time").toString();
-        temp[2] = object.get("distance").toString();
-        //temp[3] = object.get("routes").toString();
+        temp[1] = Long.toString(response.getTime());
+        temp[2] = Double.toString(response.getDistance());
         csvFileObject.add(temp);
         return this;
     }
@@ -107,7 +100,7 @@ public class ExternalCSVDump extends ExternalDumpManager {
      * @param file name of the file
      */
     public ExternalDumpManager createParserFile(String file) throws IOException{
-        Reader in = new FileReader(path + file);
+        Reader in = new FileReader(path + "\\" + file);
         this.records = CSVFormat.DEFAULT
                 .withHeader(HEADERS)
                 .withFirstRecordAsHeader()

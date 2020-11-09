@@ -1,7 +1,7 @@
 package overlay_matrix_graph;
 
+import objects.ParamsObject;
 import objects.Point;
-import overlay_matrix_graph.exceptions.NodeCodeNotInOverlayGraphException;
 import overlay_matrix_graph.exceptions.NodeNotInOverlayGraphException;
 import overlay_matrix_graph.supporters.*;
 
@@ -16,9 +16,16 @@ public class MatrixOverlayGraph implements Serializable {
     //private LocalityGraph localitySupporter;
     private LinearSupporter linearSupporter;
 
-    //TODO make these params
-    private static final boolean SPLIT_LATITUDE = true;
-    private static final int NUMBER_OF_NN = 20;
+    /**
+     * This param says if the first split of a KdTree will be done by a latitude split
+     * or a longitude split
+     */
+    private boolean SPLIT_LATITUDE = true;
+    /**
+     * This param define the number of neighbours for each NN research
+     */
+    private int NUMBER_OF_NN = 20;
+
     private boolean useKdTree;
 
     public MatrixOverlayGraph() {
@@ -33,6 +40,7 @@ public class MatrixOverlayGraph implements Serializable {
      * print the graph, for test cases
      */
     public void print() {
+        System.out.println("Graph Dimension: " + graph.size());
         graph.forEach((c,p) -> {
             System.out.println(" - Source: " + c);
             p.print();
@@ -89,8 +97,13 @@ public class MatrixOverlayGraph implements Serializable {
         this.localitySupporter = support;
     }*/
 
+    public void setParams (ParamsObject po) {
+        if(po == null)
+            return;
+        if(po.isSplitLatitude() != null) this.SPLIT_LATITUDE = po.isSplitLatitude();
+        if(po.getNumberNN() != null) this.NUMBER_OF_NN = po.getNumberNN();
+    }
 
-    //TODO make these two method only one
     public List<NeighbourResponse> searchNeighbour(Point p) {
         if(useKdTree)
             return kdTreeSupporter.searchNeighbours(p, NUMBER_OF_NN);
@@ -98,21 +111,27 @@ public class MatrixOverlayGraph implements Serializable {
     }
 
     public List<NeighbourResponse> searchNeighbourWithAngleHint(Point p, double angle) {
-        if(useKdTree)
-            return kdTreeSupporter.searchNeighbours(p, NUMBER_OF_NN, angle);
-        return linearSupporter.searchNeighbours(p, NUMBER_OF_NN, angle);
+        List<NeighbourResponse> neighbours;
+        if (useKdTree)
+            neighbours = kdTreeSupporter.searchNeighbours(p, NUMBER_OF_NN, angle);
+        else
+            neighbours = linearSupporter.searchNeighbours(p, NUMBER_OF_NN, angle);
+        if (neighbours.isEmpty()) {
+            System.out.println("With the angle hint no neighbours have been founded \n " +
+                    "The standard approach have been used");
+            if (useKdTree)
+                neighbours = kdTreeSupporter.searchNeighbours(p, NUMBER_OF_NN);
+            else
+                neighbours = linearSupporter.searchNeighbours(p, NUMBER_OF_NN);
+        }
+        return neighbours;
     }
 
     /**
      * Compute the route using both origin and destination as point on the overlay graph
      */
-    public RouteInfo route(String fromCode, String toCode) throws NodeCodeNotInOverlayGraphException {
-        try {
+    public RouteInfo route(String fromCode, String toCode) {
             return graph.get(fromCode).route(toCode);
-        } catch (NullPointerException e) {
-            throw new NodeCodeNotInOverlayGraphException("The node " + fromCode +
-                    " is not present in the Overlay Graph, impossible to route");
-        }
     }
 
     /**
@@ -130,9 +149,10 @@ public class MatrixOverlayGraph implements Serializable {
                     filter(s -> s.getLongitude().equals(p.getLongitude()) &&
                             s.getLatitude().equals(p.getLatitude())).
                     collect(Collectors.toList()).get(0);
-        } catch (NullPointerException | IndexOutOfBoundsException e) {
+        } catch (IndexOutOfBoundsException e) {
             throw new NodeNotInOverlayGraphException();
         }
     }
+
 
 }

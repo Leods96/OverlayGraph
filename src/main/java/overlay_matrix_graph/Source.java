@@ -1,7 +1,6 @@
 package overlay_matrix_graph;
 
 import objects.Point;
-import overlay_matrix_graph.exceptions.NodeCodeNotInOverlayGraphException;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -57,16 +56,10 @@ public class Source implements Serializable {
      * @param toCode Represents the destination point over the overlay graph, the origin will be the point
      * containing this object
      * @return An overlayResponse containing the precomputed overlay's data
-     * @throws NodeCodeNotInOverlayGraphException This exception will be thrown if the code represented
      * by the param <toCode> is not present into the overlay graph
      */
-    public RouteInfo route(String toCode) throws NodeCodeNotInOverlayGraphException {
-        try {
+    public RouteInfo route(String toCode) {
             return routes.get(toCode).getResponse();
-        } catch (NullPointerException e) {
-            throw new NodeCodeNotInOverlayGraphException("The node " + toCode +
-                    " is not present in the Overlay Graph, impossible to route");
-        }
     }
 
     public boolean isRoutesEmpty() {

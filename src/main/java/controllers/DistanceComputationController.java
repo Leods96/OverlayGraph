@@ -4,6 +4,7 @@ import controllers.exceptions.GraphLoadingException;
 import controllers.exceptions.OutputFileException;
 import controllers.exceptions.ResultEmptyException;
 import graph_hopper.GraphHopperInstance;
+import input_output.ExternalFileManager;
 import input_output.MatrixExcelWriter;
 import input_output.OutputFormat;
 import objects.DistanceObject;
@@ -12,7 +13,6 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import overlay_matrix_graph.MatrixOverlayGraphManager;
-import overlay_matrix_graph.exceptions.NodeCodeNotInOverlayGraphException;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import static controllers.Controller.workDirPath;
+import static controllers.Controller.*;
 
 public class DistanceComputationController {
 
@@ -43,7 +43,7 @@ public class DistanceComputationController {
         this.graphName = graphName;
         this.sheetIndex = sheetIndex;
         this.doubleComputation = doubleComputation;
-        this.usingGH = graphName.equals("graphhopper"); //TODO check if correct
+        this.usingGH = graphName.equals("GraphHopper");
         this.outputName = outputName;
     }
 
@@ -68,7 +68,7 @@ public class DistanceComputationController {
         }
         if (workbook.getNumberOfSheets() < sheetIndex || sheetIndex < 1)
             throw new ArrayIndexOutOfBoundsException(sheetIndex);
-        XSSFSheet sheet = workbook.getSheetAt(sheetIndex - 1);
+        XSSFSheet sheet = workbook.getSheetAt(sheetIndex);
         Iterator<Row> iterator = sheet.rowIterator();
         iterator.next();
         ArrayList<Point> nodes = new ArrayList<>();
@@ -88,11 +88,12 @@ public class DistanceComputationController {
     private void loadGraph() throws IOException, ClassNotFoundException{
         if(usingGH) {
             gh = new GraphHopperInstance();
-            gh.preprocessing(workDirPath + "\\Graphs\\" + graphName);
+            gh.preprocessing(null);
         } else {
             og = new MatrixOverlayGraphManager();
-            og.setGraphPath(workDirPath + "\\Graphs\\" + graphName);
+            og.setGraphPath(graphPath + "\\" + graphName);
             og.loadGraph();
+            og.setParams(new ExternalFileManager().readConfigFile());
         }
     }
 
@@ -102,29 +103,25 @@ public class DistanceComputationController {
             for ( int d = (doubleComputation ? 0 : o + 1); d < nodes.size(); d++ ) {
                 if (o == d)
                     continue;
-                Point origin = nodes.get(o), destination = nodes.get(d);
-                if(usingGH)
-                    if(outputFormat == OutputFormat.EXCEL_FILE_LIST)
+                Point origin = nodes.get(o);
+                Point destination = nodes.get(d);
+                if (usingGH) {
+                    if (outputFormat == OutputFormat.EXCEL_FILE_LIST)
                         result.add(new DistanceObject(origin.getCode(), destination.getCode(), gh.routing(origin, destination).getDistance()));
                     else
-                        result.add(new DistanceObject(origin.getCode(), gh.routing(origin, destination).getDistance()));
-                else
-                    try {
+                        result.add(new DistanceObject(origin.getCode(), destination.getCode(), gh.routing(origin, destination).getDistance()));
+                } else {
                         if (outputFormat == OutputFormat.EXCEL_FILE_LIST)
                             result.add(new DistanceObject(origin.getCode(), destination.getCode(), og.route(origin, destination).getDistance()));
                         else
-                            result.add(new DistanceObject(origin.getCode(), og.route(origin, destination).getDistance()));
-                    } catch (NodeCodeNotInOverlayGraphException e) {
-                        //TODO questo non dovrebbe mai succedere controllare
-                        System.err.println("The overlay graph is not able to find a correct neighbour");
-                        System.err.println(e.getMessage());
-                    }
+                            result.add(new DistanceObject(origin.getCode(), destination.getCode(), og.route(origin, destination).getDistance()));
+                }
             }
         return result;
     }
 
     private void printResult(List<DistanceObject> result) throws OutputFileException {
-        MatrixExcelWriter.write(workDirPath + "\\Outputs\\" + outputName, result, outputFormat);
+        MatrixExcelWriter.write(outputPath + "\\" + outputName, result, outputFormat);
     }
 
 }

@@ -8,7 +8,6 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import overlay_matrix_graph.exceptions.NodeCodeNotInOverlayGraphException;
 import util.HeartDistance;
 import util.Util;
 
@@ -23,6 +22,7 @@ import java.util.Iterator;
 
 public class OverlayHighwayExitTest extends TestCase {
 
+    private static final String OSM_FILE = "C:\\Users\\leo\\Desktop\\Stage\\OSM\\italy.osm.pbf";
     private final String FROM_FILE = "C:\\Users\\leo\\Desktop\\ThesisProject1.0\\Addresses\\Test\\HighwayExitTest\\HighwayExits.xlsx";
     private final String TO_FILE = "C:\\Users\\leo\\Desktop\\ThesisProject1.0\\Addresses\\Test\\HighwayExitTest\\HighwayExits.xlsx";
     private final String DUMP_FOLDER = "C:\\Users\\leo\\Desktop\\ThesisProject1.0\\Addresses\\Test\\HighwayExitTest\\ExitsDumps\\";
@@ -47,7 +47,7 @@ public class OverlayHighwayExitTest extends TestCase {
         ArrayList<Object[]> result = new ArrayList<>();
         ArrayList<Point> nodes = new ArrayList<>();
         GraphHopperInstance gh = new GraphHopperInstance();
-        gh.preprocessing();
+        gh.preprocessing(OSM_FILE);
 
         XSSFWorkbook workbook = null;
         try(
@@ -85,11 +85,8 @@ public class OverlayHighwayExitTest extends TestCase {
                     double ghDist = gh.routing(origin, destination).getDistance();
                     double ogDist = 0.0;
                     double haversineDist = haversine.calculate(origin, destination);
-                    try {
-                        ogDist = graphManager.route(origin, destination).getDistance();
-                    } catch (NodeCodeNotInOverlayGraphException e) {
-                        System.err.println("Error with graph's codes, origin: " + origin.getCode() + " dest: " + destination.getCode());
-                    }
+                    ogDist = graphManager.route(origin, destination).getDistance();
+
                     Object[] array = new Object[8];
                     array[0] = origin.getCode(); //Origin code
                     array[1] = destination.getCode(); //Dest code

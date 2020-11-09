@@ -7,9 +7,10 @@ import com.graphhopper.PathWrapper;
 import com.graphhopper.routing.util.EncodingManager;
 import objects.Point;
 
+import static controllers.Controller.graphPath;
+
 public class GraphHopperInstance {
 
-    private static final String OSM_FILE = "C:\\Users\\leo\\Desktop\\Stage\\OSM\\italy.osm.pbf";
     private static final String WORK_DIR = "C:\\Users\\leo\\Desktop\\ThesisProject1.0\\Graph";
     private static final String VEHICLE = "car";
 
@@ -18,24 +19,10 @@ public class GraphHopperInstance {
     /**
      * Create the graph or load it from the memory
      */
-    public void preprocessing() {
-        //TODO remove it...used for test
-        graphHopper = new GraphHopper().setGraphHopperLocation(WORK_DIR) // "gh-car"
+    public void preprocessing(String osmPath) {
+        graphHopper = new GraphHopper().setGraphHopperLocation(graphPath + "\\graphhopper") // "gh-car"
                 .setEncodingManager(new EncodingManager(VEHICLE)) // "car"
-                .setOSMFile(OSM_FILE)
-                .forServer();
-        System.out.println("Creation or Load of the graph hopper graph..");
-        graphHopper.importOrLoad();
-        System.out.println("graph hopper ready");
-    }
-
-    /**
-     * Create the graph or load it from the memory
-     */
-    public void preprocessing(String workDir) {
-        graphHopper = new GraphHopper().setGraphHopperLocation(workDir) // "gh-car"
-                .setEncodingManager(new EncodingManager(VEHICLE)) // "car"
-                .setOSMFile(OSM_FILE)
+                .setOSMFile(osmPath)
                 .forServer();
         System.out.println("Creation or Load of the graph hopper graph..");
         graphHopper.importOrLoad();

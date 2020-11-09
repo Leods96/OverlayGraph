@@ -1,8 +1,8 @@
 package overlay_matrix_graph;
 
 import input_output.ExternalCSVDump;
+import objects.ParamsObject;
 import objects.Point;
-import overlay_matrix_graph.exceptions.NodeCodeNotInOverlayGraphException;
 import overlay_matrix_graph.exceptions.NodeNotInOverlayGraphException;
 import overlay_matrix_graph.supporters.NeighbourResponse;
 import overlay_matrix_graph.supporters.Supporter;
@@ -18,22 +18,26 @@ import java.util.stream.Collectors;
  * Manages the supporters and the route requests
  */
 public class MatrixOverlayGraphManager {
-    private static final String MAIN_PATH = "OverlayGraph";
-    private static final String OVERLAY_GRAPH = "OverlayGraph\\OverlayGraph";
-    private static final String KDTREE_SUPPORTER_PATH = "OverlayGraph\\KdTree";
+    private static final String OVERLAY_GRAPH = "\\OverlayGraph";
+    private static final String KDTREE_SUPPORTER_PATH = "\\KdTree";
     //private static final String LOCALITY_GRAPH_PATH = "OverlayGraph\\LocalityGraph";
-    private static final String LINEAR_SUPPORTER = "OverlayGraph\\Linear";
-    //TODO make these as parameter and check
-    private static final boolean angleNeighboursHint = true;
-    private static final int THRESHOLD_NEIGHBOUR_DISTANCE = 100000; //100 km
-    private static final boolean BEST_PATH_CHOSE_OVER_OVERLAY_ONLY = false;
+    private static final String LINEAR_SUPPORTER = "\\Linear";
     /**
-     * This threshold represent the maximum allowed distance (in meters) between the nearest neighbour
-     * and the other possible neighbours
-     * TODO make it a settable parameter
+     * This parameter define the use of the angle hint research during the NNR
      */
-    private static final double NEIGHBOURS_THRESHOLD = 1500;
-    private static final String POINTS_GEOCODE = "geocodedAddresses.xlsx";
+    private boolean ANGLE_NEIGHBOURS_HINT = true;
+
+    private boolean BEST_PATH_CHOSE_OVER_OVERLAY_ONLY = false;
+    /**
+     * This threshold represents the maximum allowed distance (in meters) between the nearest neighbour
+     * and the other possible neighbours
+     */
+    private double NEIGHBOURS_THRESHOLD = 1500;
+    /**
+     * This threshold represents the maximum allowed distance (in meters) between the overlay point and his
+     * neighbours
+     */
+    private double THRESHOLD_NEIGHBOUR_DISTANCE = 100000; //100 km
 
     private MatrixOverlayGraph graph;
     private ExternalCSVDump dump;
@@ -56,6 +60,16 @@ public class MatrixOverlayGraphManager {
         this.graphPath = graphPath;
         if(graphPath == null)
             System.err.println("Null path");
+    }
+
+    public void setParams(ParamsObject po) {
+        if (po == null)
+            return;
+        if(po.isAngleHint() != null) this.ANGLE_NEIGHBOURS_HINT = po.isAngleHint();
+        if(po.isOverlayOnly() != null) this.BEST_PATH_CHOSE_OVER_OVERLAY_ONLY = po.isOverlayOnly();
+        if(po.getNeighbourThreshold() != null) this.NEIGHBOURS_THRESHOLD = po.getNeighbourThreshold();
+        if(po.getNeighbourDistance() != null) this.THRESHOLD_NEIGHBOUR_DISTANCE = po.getNeighbourDistance();
+        graph.setParams(po);
     }
 
     /**
@@ -102,7 +116,7 @@ public class MatrixOverlayGraphManager {
     /**
      * Function that parse a specific dump file with precomputed distances and creates the OverlayGraph
      */
-    public void createGraph() {
+    public void createGraph() throws IOException{
         System.out.println("The overlay graph will be created from scratch");
         graph = new MatrixOverlayGraph();
         parse(dumpPath);
@@ -166,15 +180,16 @@ public class MatrixOverlayGraphManager {
     /**
      * Write the graph into an external file
      */
-    private void saveGraph() {
+    private void saveGraph() throws IOException {
+        new File(graphPath).mkdir();
         try(FileOutputStream fileOut = new FileOutputStream(graphPath + OVERLAY_GRAPH);
             ObjectOutputStream objectOut = new ObjectOutputStream(fileOut))
         {
             objectOut.writeObject(graph);
             System.out.println("The overlay graph was successfully written to a file");
-        } catch (Exception ex) {
-            System.out.println("Error writing the overlay graph");
-            ex.printStackTrace();
+        } catch (IOException e) {
+            new File(graphPath).delete();
+            throw e;
         }
     }
 
@@ -199,7 +214,7 @@ public class MatrixOverlayGraphManager {
      */
     public void loadGraph() throws IOException, ClassNotFoundException{
         System.out.println("The overlay graph will be loaded from an external file");
-        try(FileInputStream fis = new FileInputStream(graphPath);
+        try(FileInputStream fis = new FileInputStream(graphPath + OVERLAY_GRAPH);
             ObjectInputStream ois = new ObjectInputStream(fis))
         {
             graph = (MatrixOverlayGraph) ois.readObject();
@@ -212,8 +227,9 @@ public class MatrixOverlayGraphManager {
      * Read the supporters from the external file
      */
     public void loadSupporters() {
-        //TODO check se kd esiste allora uso nel load
         try {
+            this.kdTreeSupporterActived = Arrays.stream(Objects.requireNonNull(new File(graphPath).listFiles())).
+                map(File::getName).filter(s -> s.compareTo("KdTree") == 0).count() == 1;
             try (FileInputStream fis = new FileInputStream(graphPath + (kdTreeSupporterActived ? KDTREE_SUPPORTER_PATH : LINEAR_SUPPORTER));
                  ObjectInputStream ois = new ObjectInputStream(fis)) {
                 graph.setSupporter((Supporter) ois.readObject());
@@ -233,21 +249,20 @@ public class MatrixOverlayGraphManager {
      * @param fromPoint origin of the route
      * @param toPoint destination of the route
      * @return An OverlayResponse with all the information of the route
-     * @throws NodeCodeNotInOverlayGraphException Exception raised if the graph will not contain the code of
      * the selected node as part of the OverlayGraph
      */
-    public OverlayResponse route(Point fromPoint, Point toPoint) throws NodeCodeNotInOverlayGraphException {
+    public OverlayResponse route(Point fromPoint, Point toPoint) {
         ArrayList<NeighbourResponse> originNeighbours = null;
         ArrayList<NeighbourResponse> destinationNeighbours = null;
         OverlayResponse response = new OverlayResponse(fromPoint, toPoint);
-
         try {
             response.setOriginCode(graph.pointPresentIntoGraph(fromPoint).getCode());
             originNeighbours = new ArrayList<>();
             originNeighbours.add(new NeighbourResponse(fromPoint, 0.0));
         } catch (NodeNotInOverlayGraphException e) {
+            //TODO check why we do the add all if the hint is true?
             originNeighbours = new ArrayList<>(graph.searchNeighbour(fromPoint));
-            if(angleNeighboursHint)
+            if(ANGLE_NEIGHBOURS_HINT)
                 originNeighbours.addAll(graph.
                         searchNeighbourWithAngleHint(fromPoint, AngleCalculator.getAngle(fromPoint, toPoint)));
             response.setStartingStep();
@@ -258,7 +273,7 @@ public class MatrixOverlayGraphManager {
             destinationNeighbours.add(new NeighbourResponse(toPoint, 0.0));
         } catch (NodeNotInOverlayGraphException e) {
             destinationNeighbours = new ArrayList<>(graph.searchNeighbour(toPoint));
-            if(angleNeighboursHint)
+            if(ANGLE_NEIGHBOURS_HINT)
                 destinationNeighbours.addAll(graph.
                         searchNeighbourWithAngleHint(toPoint, AngleCalculator.getAngle(toPoint, fromPoint)));
             response.setFinalStep();
@@ -280,10 +295,9 @@ public class MatrixOverlayGraphManager {
      * @param originNeighbours set of origin's nearest neighbours
      * @param destinationNeighbours set of origin's nearest neighbours
      * @return An OverlayResponse with all the information of the route
-     * @throws NodeCodeNotInOverlayGraphException Exception raised if the graph will not contain the code of
      * the selected node as part of the OverlayGraph
      */
-    public OverlayResponse neighboursOverlayComputation(OverlayResponse response, List<NeighbourResponse> originNeighbours, List<NeighbourResponse> destinationNeighbours ) throws NodeCodeNotInOverlayGraphException {
+    public OverlayResponse neighboursOverlayComputation(OverlayResponse response, List<NeighbourResponse> originNeighbours, List<NeighbourResponse> destinationNeighbours ) {
         //Check the intersection between the neighbours
         if (checkIntersectionBetweenNeighbours(originNeighbours, destinationNeighbours)) {
                 System.out.println("Neighbours intersection");
@@ -297,6 +311,7 @@ public class MatrixOverlayGraphManager {
         NeighbourResponse destination = null;
         double overlayDistance = Double.MAX_VALUE;
         RouteInfo middlePath = null;
+        System.out.println("Origin neighbours: " + originNeighbours + "\nDestination neighbours: " + destinationNeighbours);
         for(NeighbourResponse n1 : originNeighbours) {
             for (NeighbourResponse n2 : destinationNeighbours) {
                 RouteInfo resp = graph.route(n1.getPoint().getCode(), n2.getPoint().getCode());
@@ -313,7 +328,7 @@ public class MatrixOverlayGraphManager {
         return routeComposition(response, middlePath, origin.getDistance(), destination.getDistance());
     }
 
-    public OverlayResponse neighboursTotalComputation(OverlayResponse response, List<NeighbourResponse> originNeighbours, List<NeighbourResponse> destinationNeighbours ) throws NodeCodeNotInOverlayGraphException {
+    public OverlayResponse neighboursTotalComputation(OverlayResponse response, List<NeighbourResponse> originNeighbours, List<NeighbourResponse> destinationNeighbours ) {
         originNeighbours = originNeighbours.stream().filter(n -> n.getDistance() < THRESHOLD_NEIGHBOUR_DISTANCE).collect(Collectors.toList());
         destinationNeighbours = destinationNeighbours.stream().filter(n -> n.getDistance() < THRESHOLD_NEIGHBOUR_DISTANCE).collect(Collectors.toList());
 
@@ -370,12 +385,11 @@ public class MatrixOverlayGraphManager {
      * @param response OverlayResponse we are working with
      * @param overlayDistance precomputed distance of the overlay graph
      * @return An OverlayResponse with all the information of the route
-     * @throws NodeCodeNotInOverlayGraphException Exception raised if the graph will not contain the code of
      * the selected node as part of the OverlayGraph
      */
-    public OverlayResponse routeComposition(OverlayResponse response, RouteInfo overlayDistance, Double originDistance, Double destinationDistance) throws NodeCodeNotInOverlayGraphException {
+    public OverlayResponse routeComposition(OverlayResponse response, RouteInfo overlayDistance, Double originDistance, Double destinationDistance) {
         HeartDistance distCalculator = new HeartDistance();
-        //FARE: check su middel path
+
         if(!response.getMiddlePath()) {
             response.computeTimeWithSpeedProfile(distCalculator.
                     calculate(response.getOrigin(),response.getDestination()));
@@ -384,10 +398,9 @@ public class MatrixOverlayGraphManager {
         if(response.getInitialPath()) {
             response.setDistance(originDistance);
         }
-        //TODO: rimuovere e mettere risultato pre funzione
-        if(response.getMiddlePath()) {
-            response.concat(overlayDistance);
-        }
+
+        response.concat(overlayDistance);
+
         if(response.getFinalPath()) {
             response.setDistance(destinationDistance);
         }

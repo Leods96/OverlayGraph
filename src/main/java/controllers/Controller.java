@@ -1,43 +1,51 @@
 package controllers;
 
 import controllers.exceptions.*;
+import graph_hopper.GraphHopperInstance;
+import input_output.ExternalCheckPointManager;
 import input_output.ExternalFileManager;
 import input_output.OutputFormat;
 import input_output.exceptions.CheckPointException;
 import input_output.exceptions.FileInWrongFormatException;
+import objects.CheckPoint;
+import objects.ParamsObject;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 
 public class Controller {
-
     private final ExternalFileManager fileManager;
 
-    //TODO manage this var
-    public static String workDirPath;
+    public static final String workDirPath = "Work_Directory";
     public static final String cpPath = workDirPath + "\\CheckPoint";
     public static final String graphPath = workDirPath + "\\Graphs";
     public static final String ghPath = graphPath + "\\GraphHopper";
     public static final String dumpsPath = workDirPath + "\\Dumps";
+    public static final String outputPath = workDirPath + "\\Output";
+    public static final String graphConfigPath = workDirPath + "\\GraphConfiguration";
 
-    //Vars for the distance computation
     private String inputAddressFile;
     private String graphName;
-    private int sheetIndex;
-    private OutputFormat outputFormat;
-    private boolean doubleComputation;
+    private String osmPath;
     private String outputName;
 
-    //Vars for the overlay creation
-    private boolean useCheckPoint;
+    private int sheetIndex;
 
+    private OutputFormat outputFormat;
+
+    private boolean doubleComputation;
+    private boolean useCheckPoint;
+    private boolean useKdTree;
 
     public Controller() {
         fileManager = new ExternalFileManager(workDirPath);
-        //TODO load from a file all the necessary data
-        //precomputazioni salvate
-        //file di configurazione da non reinserire
+        if(!fileManager.fileExists(cpPath)) fileManager.createFolderFromPath(cpPath);
+        if(!fileManager.fileExists(graphPath)) fileManager.createFolderFromPath(graphPath);
+        if(!fileManager.fileExists(ghPath)) fileManager.createFolderFromPath(ghPath);
+        if(!fileManager.fileExists(dumpsPath)) fileManager.createFolderFromPath(dumpsPath);
+        if(!fileManager.fileExists(outputPath)) fileManager.createFolderFromPath(outputPath);
+        if(!fileManager.fileExists(graphConfigPath)) fileManager.createFolderFromPath(graphConfigPath);
     }
 
     /**
@@ -46,13 +54,13 @@ public class Controller {
      * @throws Exception raised if the file does not exist or is not in the correct format
      */
     public void setInputAddressFile(String path) throws FileNotFoundException, FileInWrongFormatException {
-        fileManager.fileExists(path);
+        if(!fileManager.fileExists(path))
+            throw new FileNotFoundException("The specified file does not exists");
         fileManager.fileInCorrectFormat(path, new String[]{"xlsx"}); //only excel file are accepted
         this.inputAddressFile = path;
     }
 
     public void setOutputName(String name) {
-        //TODO check if this name already exist
         this.outputName = name;
     }
 
@@ -113,8 +121,28 @@ public class Controller {
      * Perform the overlay graph pre-computation based on the previous inputs
      */
     public void startOverlayPreComputation() throws IOException, InputFileException, GraphCreationException, CheckPointException {
-        OverlayComputationController overlayController = new OverlayComputationController(inputAddressFile, sheetIndex, graphName, useCheckPoint);
-        overlayController.startComputation();
+        if(useCheckPoint)
+            new ExternalCheckPointManager().createCheckPointFileData(inputAddressFile, sheetIndex, graphName, useKdTree);
+        OverlayComputationController overlayController = new OverlayComputationController(inputAddressFile, sheetIndex, graphName, useCheckPoint, useKdTree);
+        try {
+            overlayController.startComputation();
+        } finally {
+            new ExternalCheckPointManager().deleteCheckPointFile();
+        }
+    }
+
+    /**
+     * Overlay pre-computation will restart from the saved check point
+     */
+    public void reStartOverlayCreation() throws IOException, InputFileException, GraphCreationException, CheckPointException{
+        ExternalCheckPointManager reader = new ExternalCheckPointManager();
+        CheckPoint cp = reader.getFileData();
+        this.inputAddressFile = cp.getInputFilePath();
+        this.sheetIndex = cp.getFileIndex();
+        this.graphName = cp.getGraphName();
+        this.useKdTree = cp.getKdTree();
+        this.useCheckPoint = true;
+        startOverlayPreComputation();
     }
 
     /**
@@ -122,49 +150,54 @@ public class Controller {
      * @param path String containing the absolute path
      * @throws Exception raised if the file does not exist or is not in the correct format
      */
-    public void setOSMPath(String path) throws Exception{
-
+    public void setOSMPath(String path) throws FileNotFoundException, FileInWrongFormatException {
+        if (!fileManager.fileExists(path))
+            throw new FileNotFoundException();
+        fileManager.fileInCorrectFormat(path, new String[]{"osm","pbf","osm.pbf"}); //only excel file are accepted
+        this.osmPath = path;
     }
 
     /**
      * This method set the name of the overlay graph that will be created
      * @param name String containing the name of the graph
-     * @throws Exception raised if the name is already used
+     * @throws GraphCreationException raised if the name is already used
      */
-    public void setOverlayGraphName(String name) throws Exception {
-        //TODO check the name is not already used
+    public void setOverlayGraphName(String name) throws GraphCreationException {
+        if (fileManager.getGraphs().contains(name))
+            throw new GraphCreationException();
         this.graphName = name;
     }
 
     /**
-     * Enable the use of checkpoints
+     * Enable or disable the use of checkpoints
+     * @param useCheckPoint
      */
-    public void enableCheckPoint() {
-        this.useCheckPoint = true;
+    public void useCheckPoint(boolean useCheckPoint) {
+        this.useCheckPoint = useCheckPoint;
     }
 
     /**
-     * Disable the use of checkpoints
+     * Enable the use of a tree as supporter
+     * @param useKdTree
      */
-    public void disableCheckPoint() {
-        this.useCheckPoint = false;
+    public void useKdTree(boolean useKdTree) {
+        this.useKdTree = useKdTree;
     }
 
     /**
-     * This method return the path into which the graph are currently saved
-     * @return String representing the path, null if no path is set
+     * This method check if the graph folder exist
+     * @return true if this folder exist, false otherwise
      */
-    public String getGraphPath() {
-        return null;
+    public boolean graphsFolderExist() {
+        return fileManager.fileExists(graphPath);
     }
 
     /**
-     * This method set the path of the folder where the graphs will be saved
-     * @param path String containing the absolute path
-     * @throws Exception raised if the folder does not exist
+     * This method create folder where the graphs will be saved
+     * @return true if the folder is created, false otherwise
      */
-    public void setGraphFolderPath(String path) throws Exception {
-
+    public boolean graphsFolderSetUp() {
+        return fileManager.createFolderFromPath(graphPath);
     }
 
     /**
@@ -172,7 +205,8 @@ public class Controller {
      * @throws Exception problem during the graph-hopper creation
      */
     public void graphHopperGraphCreation() throws Exception {
-
+        GraphHopperInstance gh = new GraphHopperInstance();
+        gh.preprocessing(osmPath);
     }
 
     /**
@@ -180,21 +214,22 @@ public class Controller {
      * @return true if exist a check point for a previous computation, false if there is not
      */
     public boolean checkOverlayCreationInProgress() {
-        return true;
-    }
-
-    /**
-     * Overlay pre-computation will restart from the saved check point
-     */
-    public void reStartOverlayCreation() {
-
+        return fileManager.dirContainsFiles(cpPath);
     }
 
     /**
      * Method used to delete a graph based on his index
      */
-    public void deleteGraph() {
+    public void deleteGraph() throws IOException {
         fileManager.deleteGraph(graphName);
+    }
+
+    public void createConfigurationFile(ParamsObject po) throws IOException {
+        fileManager.createConfigFile(po);
+    }
+
+    public void deleteConfigurationFile() throws IOException{
+        fileManager.deleteInnerFiles(graphConfigPath);
     }
 
 }

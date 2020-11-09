@@ -44,54 +44,52 @@ public interface MatrixExcelWriter {
 
     static void printFileList(List<DistanceObject> result, XSSFSheet sheet) {
         int counter = 0;
-        boolean thereIsDestination = result.get(0).getDestination() != null;
-        Row row = sheet.createRow(counter++);
+        Row row = sheet.createRow(counter);
+        counter++;
         row.createCell(0).setCellValue("Origin");
         row.createCell(1).setCellValue("Distance");
-        if(thereIsDestination)
-            row.createCell(2).setCellValue("Destination");
+        row.createCell(2).setCellValue("Destination");
         for(DistanceObject elem : result) {
-            row = sheet.createRow(counter++);
+            row = sheet.createRow(counter);
             row.createCell(0).setCellValue(elem.getOrigin());
             row.createCell(1).setCellValue(elem.getDistance());
-            if(thereIsDestination)
-                row.createCell(2).setCellValue(elem.getDestination());
+            row.createCell(2).setCellValue(elem.getDestination());
+            counter++;
         }
     }
 
     static void printTriangular(List<DistanceObject> result, XSSFSheet sheet) {
-        int originCounter = 0; //which origin are we reading and which column we are writing
-        String origin = result.get(0).getOrigin();
-        sheet.createRow(0);
-        int i;
-        for (int k = 0; k < result.size(); k = i) {
-            for (i = 0; result.get(i + k).getOrigin().compareTo(origin) == 0; i++) {
-                if (originCounter == 0)
-                    sheet.createRow(i + 1);
-                if (i == 0)
-                    sheet.getRow(originCounter).createCell(0).setCellValue(origin);
-                sheet.getRow(originCounter + i + 1).createCell(originCounter + 1).setCellValue(result.get(i + k).getDistance());
+        int rowCounter;
+        for (rowCounter = 0; result.get(rowCounter).getOrigin().compareTo(result.get(0).getOrigin()) == 0; rowCounter++)
+            sheet.createRow(rowCounter);
+        sheet.createRow(rowCounter);
+        int k = 0;
+        for (int i = 0; i < rowCounter; i++) {
+            sheet.getRow(i).createCell(0).setCellValue(result.get(k).getOrigin());
+            for (int j = i + 1; j < rowCounter + 1; j ++) {
+                sheet.getRow(j).createCell(i + 1).setCellValue(result.get(k).getDistance());
+                k++;
             }
-            originCounter++;
-            origin = result.get(i + k).getOrigin();
         }
+        sheet.getRow(rowCounter).createCell(0).setCellValue(result.get(k - rowCounter + 2).getDestination());
     }
 
     static void printSquare(List<DistanceObject> result, XSSFSheet sheet) {
         int rowCounter;
-        int columnCounter = 1;
         String origin = result.get(0).getOrigin();
         //Creation of rows
         for (rowCounter = 0; result.get(rowCounter).getOrigin().compareTo(origin) == 0; rowCounter++)
             sheet.createRow(rowCounter);
-        for (int i = 0; i < result.size()/rowCounter; i ++) {
-            for (int j = 0; j < rowCounter; j ++) {
+        sheet.createRow(rowCounter);
+        int k = 0;
+        for (int i = 0; i < rowCounter + 1; i ++) {
+            sheet.getRow(i).createCell(0).setCellValue(result.get(k).getOrigin());
+            for (int j = 0; j < rowCounter + 1; j ++) {
                 if (i == j)
                     continue;
-                sheet.getRow(j).createCell(columnCounter).setCellValue(result.get(j + i * (rowCounter - 1)).getDistance());
+                sheet.getRow(j).createCell(i + 1).setCellValue(result.get(k).getDistance());
+                k++;
             }
-            columnCounter++;
         }
-
     }
 }

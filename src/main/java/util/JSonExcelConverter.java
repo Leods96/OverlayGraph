@@ -17,7 +17,7 @@ public class JSonExcelConverter {
         fields.add("id");
         fields.add("lat");
         fields.add("lon");
-        //TODO maybe not necessary scan all the array
+
         for(int i=0; i < json.length()/4; i++) {
             JSONObject elem = json.getJSONObject(0);
             for(String s : elem.keySet()) {

@@ -3,7 +3,6 @@ package overlay_matrix_graph;
 import junit.framework.TestCase;
 import objects.Point;
 import org.junit.Test;
-import overlay_matrix_graph.exceptions.NodeCodeNotInOverlayGraphException;
 import util.Util;
 
 
@@ -26,14 +25,9 @@ public class RouteOverlayGraphTest extends TestCase {
 
         OverlayResponse response1 = null;
         OverlayResponse response2 = null;
-        try {
-            response1 = graphManager.route(origin, destination);
-            response2 = graphManager.route(destination, origin);
-        } catch (NodeCodeNotInOverlayGraphException e) {
-            System.err.println("NodeCodeNotInOverlayGraphException");
-            e.getMessage();
-            fail();
-        }
+        response1 = graphManager.route(origin, destination);
+        response2 = graphManager.route(destination, origin);
+
         StringBuilder sb = new StringBuilder();
         sb.append("https://www.google.nl/maps/dir");
         sb.append("/").append(response1.getOrigin().getLatitude()).append(",+").append(response1.getOrigin().getLongitude());

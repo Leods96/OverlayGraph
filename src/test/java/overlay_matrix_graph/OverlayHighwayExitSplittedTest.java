@@ -9,7 +9,6 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import overlay_matrix_graph.exceptions.NodeCodeNotInOverlayGraphException;
 import util.HeartDistance;
 import util.Util;
 
@@ -22,6 +21,7 @@ import java.util.stream.Collectors;
 
 public class OverlayHighwayExitSplittedTest extends TestCase {
 
+    private static final String OSM_FILE = "C:\\Users\\leo\\Desktop\\Stage\\OSM\\italy.osm.pbf";
     private final String FROM_FILE = "C:\\Users\\leo\\Desktop\\ThesisProject1.0\\Addresses\\CountryInformation\\FilteredNodes\\FilteredFilteredResult.xlsx";
     private final String TO_FILE = "C:\\Users\\leo\\Desktop\\ThesisProject1.0\\Addresses\\CountryInformation\\FilteredNodes\\FilteredFilteredResult.xlsx";
     private final String DUMP_FOLDER = "C:\\Users\\leo\\Desktop\\ThesisProject1.0\\Addresses\\CountryInformation\\FilteredNodes\\ProvinceBoudariesDump\\";
@@ -89,12 +89,9 @@ public class OverlayHighwayExitSplittedTest extends TestCase {
                     Point destination = nodes.get(j);
                     double ogDist = 0.0;
                     OverlayResponse response = null;
-                    try {
-                        response = graphManager.route(origin, destination);
-                        ogDist = response.getDistance();
-                    } catch (NodeCodeNotInOverlayGraphException e) {
-                        System.err.println("Test: Error with graph's codes, origin: " + origin.getCode() + " dest: " + destination.getCode());
-                    }
+                    response = graphManager.route(origin, destination);
+                    ogDist = response.getDistance();
+
                     Object[] array = new Object[9];
                     array[0] = origin.getCode(); //Origin code
                     array[1] = destination.getCode(); //Dest code
@@ -135,7 +132,7 @@ public class OverlayHighwayExitSplittedTest extends TestCase {
         System.out.println("TEST: computation done in "+ (System.nanoTime()-time)/1000000000);
         System.out.println("TEST: creation of graph hopper graph");
         GraphHopperInstance gh = new GraphHopperInstance();
-        gh.preprocessing();
+        gh.preprocessing(OSM_FILE);
         System.out.println("TEST: Computing the routes for the graph hopper graph");
         time = System.nanoTime();
         long ghTime = System.nanoTime();

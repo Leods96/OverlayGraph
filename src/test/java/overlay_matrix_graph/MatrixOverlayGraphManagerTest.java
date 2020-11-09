@@ -6,20 +6,25 @@ import junit.framework.TestCase;
 import input_output.ExcelReader;
 import input_output.exceptions.CellTypeException;
 import objects.Point;
-import overlay_matrix_graph.exceptions.NodeCodeNotInOverlayGraphException;
 
 import java.io.IOException;
 
 public class MatrixOverlayGraphManagerTest extends TestCase {
 
+    private static final String OSM_FILE = "C:\\Users\\leo\\Desktop\\Stage\\OSM\\italy.osm.pbf";
     private static final String PATH = "C:\\Users\\leo\\Desktop\\ThesisProject1.0\\Addresses\\geocodedAddresses.xlsx";
 
     public void testDifferencesBetweenOverlayRoutesAndGH() {
         //Creation of the two graphs (Overlay and GraphHopper)
         MatrixOverlayGraphManager og = new MatrixOverlayGraphManager();
-        og.loadOrCreateGraph();
+        try {
+            og.loadOrCreateGraph();
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail();
+        }
         GraphHopperInstance gh = new GraphHopperInstance();
-        gh.preprocessing();
+        gh.preprocessing(OSM_FILE);
         //Read a random pair (origin, destination)
         ExcelReader reader = null;
         try {
@@ -55,12 +60,8 @@ public class MatrixOverlayGraphManagerTest extends TestCase {
         ghTime = System.nanoTime() - ghTime;
         double ogTime = System.nanoTime();
         OverlayResponse ogResp = null;
-        try {
-            ogResp = og.route(origin, destination);
-        } catch (NodeCodeNotInOverlayGraphException e) {
-            System.err.println("impossibile trovare il nodo nell'overlay graph");
-            fail();
-        }
+        ogResp = og.route(origin, destination);
+
         ogTime = System.nanoTime() - ogTime;
         System.out.println("\nGRAPH HOPPER RESULT");
         System.out.println("Time: " + ghResp.getTime() + " [ms]");

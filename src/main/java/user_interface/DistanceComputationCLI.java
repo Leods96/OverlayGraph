@@ -6,6 +6,7 @@ import java.util.List;
 
 import static user_interface.CLI.*;
 import static user_interface.UtilCLI.exitCondition;
+import static user_interface.UtilCLI.printError;
 
 /**
  * This interface contains all the support functions of the CLI that are used to manage the setup of the
@@ -27,13 +28,13 @@ public interface DistanceComputationCLI {
         boolean condition;
         do {
             condition = true;
-            System.out.println("Absolute path of the file containing the input addresses on which work");
+            textTerminal.println("\nAbsolute path of the file containing the input addresses on which work");
             String path = textIO.newStringInputReader().read("Path: ");
             if(exitCondition(path)) return true;
             try {
                 controller.setInputAddressFile(path);
             } catch (Exception e) {
-                System.err.println(e.getMessage());
+                printError(e.getMessage());
                 condition = false;
             }
         } while (!condition);
@@ -41,7 +42,7 @@ public interface DistanceComputationCLI {
     }
 
     static boolean setInputFileSheetIndex() {
-        System.out.println("Insert the index of the sheet to read in the excel file");
+        textTerminal.println("\nInsert the index of the sheet to read in the excel file");
         int choice = UtilCLI.inputParser(-1);
         if(choice == EXIT) return true;
         controller.setSheetIndex(choice);
@@ -58,7 +59,9 @@ public interface DistanceComputationCLI {
     }
 
     static boolean setOutputFormat() {
-        int choice = UtilCLI.inputParser(OutputFormat.printFormats());
+        List<String> formats = OutputFormat.getOutputFormatList();
+        UtilCLI.printChoiceAmongList(formats);
+        int choice = UtilCLI.inputParser(formats.size());
         if(choice == EXIT) return true;
         controller.setOutputFormat(OutputFormat.getOutputFromNum(choice));
         if(OutputFormat.getOutputFromNum(choice) == OutputFormat.EXCEL_FILE_LIST)
@@ -67,9 +70,9 @@ public interface DistanceComputationCLI {
     }
 
     static boolean setDoubleComputation() {
-        System.out.println("Select the computation option of the distance matrix: ");
-        System.out.println("1 - One way approximation");
-        System.out.println("2 - Differentiation between direction ");
+        textTerminal.println("\nSelect the computation option of the distance matrix: ");
+        textTerminal.println("1 - One way approximation");
+        textTerminal.println("2 - Differentiation between direction ");
         int choice = UtilCLI.inputParser(2);
         if (choice == EXIT) return true;
         controller.setRoundTripOption(choice == 2);
@@ -77,8 +80,8 @@ public interface DistanceComputationCLI {
     }
 
     static boolean setOutputPath() {
-        System.out.println("Absolute path where write the output: ");
-        String name = textIO.newStringInputReader().read("Path: ");
+        textTerminal.println("\nName of the output file: ");
+        String name = textIO.newStringInputReader().read("Name: ");
         if(exitCondition(name)) return true;
         controller.setOutputName(name);
         return false;

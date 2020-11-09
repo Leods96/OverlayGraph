@@ -126,14 +126,13 @@ public class OverlayResponse {
         return distance.stream().mapToDouble(Double::doubleValue).sum();
     }
 
-    //TODO this could have no sense, maybe is better to compute te time only if getTime is called
     /**
      * Set the distance and compute the time with respect to a speed profile
      * @return OverlayResponse object
      */
     public OverlayResponse computeTimeWithSpeedProfile(double distance) {
         this.distance.add(distance * HAVERSINE_INCREMENT);
-        //TODO check if this is ok
+        //TODO check speed profile
         //conversion of speed in ms and computation of the time converted in millisecond
         this.time.add((distance/(SPEED * FROM_KMH_TO_MS_CONVERSION)*1000));
         return this;
@@ -145,7 +144,7 @@ public class OverlayResponse {
     }
 
     /**
-     * Join of RouteInfo of the overla graph with the response
+     * Join of RouteInfo of the overlay graph with the response
      */
     public OverlayResponse concat(RouteInfo ri) {
         this.time.add(ri.getTime());

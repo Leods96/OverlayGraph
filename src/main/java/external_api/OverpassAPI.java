@@ -64,11 +64,11 @@ public class OverpassAPI {
             throw new RuntimeException(ex.getCause());
         }
     }
-    //TODO: check if correct
+
     private JSONObject filteredResponse (String response) {
         JSONArray array = new JSONObject(response).getJSONArray("elements");
         JSONArray newArray = new JSONArray();
-        int length = array.length();
+        int length = array.length(); //The length of the array can change at runtime because there is a remove into the loop
         for(int i = 0; i < length; i++) {
             JSONObject elem = (JSONObject) array.remove(0);
             JSONObject newElem = new JSONObject();

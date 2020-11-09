@@ -35,7 +35,7 @@ public class Util {
             ControllerGH controller = new ControllerGH(fromFile, fromSheetNum, toFile,
                     toSheetNum, dumpFolder, configFolder);
             System.out.println("Starting with the dump computation...");
-            controller.computeDump();
+            controller.computeDump(true);
             System.out.println("Dump computed");
         } catch (Exception e) {
             e.printStackTrace();

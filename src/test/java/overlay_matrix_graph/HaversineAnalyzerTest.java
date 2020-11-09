@@ -21,6 +21,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 
 public class HaversineAnalyzerTest extends TestCase {
+    private static final String OSM_FILE = "C:\\Users\\leo\\Desktop\\Stage\\OSM\\italy.osm.pbf";
     private static final String NAME = "TestInnerCityMilano";
     private static final String PATH_TO_READ = "C:\\Users\\leo\\Desktop\\ThesisProject1.0\\Addresses\\Test_Haversine_vs_GH\\"+ NAME + ".xlsx";
     private static final String PATH_TO_WRITE = "C:\\Users\\leo\\Desktop\\ThesisProject1.0\\Addresses\\Test_Haversine_vs_GH\\"+ NAME + "result.xlsx";
@@ -32,7 +33,7 @@ public class HaversineAnalyzerTest extends TestCase {
         ArrayList<Object[]> result = new ArrayList<>();
         ArrayList<Object[]> resultInternal = new ArrayList<>();
         GraphHopperInstance gh = new GraphHopperInstance();
-        gh.preprocessing();
+        gh.preprocessing(OSM_FILE);
         HeartDistance haversine = new HeartDistance();
         ArrayList<Point> nodes = new ArrayList<>();
         ArrayList<Point> internal = new ArrayList<>();

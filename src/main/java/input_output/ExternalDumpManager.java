@@ -1,5 +1,7 @@
 package input_output;
 
+import graph_hopper.ResponseManager;
+
 import java.io.IOException;
 import java.util.Map;
 
@@ -21,7 +23,7 @@ public abstract class ExternalDumpManager {
         return this;
     }
 
-    public ExternalDumpManager saveData(Map object, String code) {
+    public ExternalDumpManager saveData(ResponseManager response, String code) {
         return this;
     }
 

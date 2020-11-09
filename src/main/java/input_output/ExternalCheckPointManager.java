@@ -1,21 +1,24 @@
 package input_output;
 
 import input_output.exceptions.CheckPointException;
+import objects.CheckPoint;
 
 import java.io.*;
 import java.util.Scanner;
+
+import static controllers.Controller.cpPath;
 
 /**
  * Object that manage the access to an external file used to save and read the check-points
  * It is useful during long computation to split the work into different steps
  */
-public class ExternalConfigurationManager {
-    private static final String CHECKPOINT_FILE_NAME = "checkPoint.txt";
-    private final String path;
+public class ExternalCheckPointManager {
+    private static final String CHECKPOINT_FILE = "checkPoint.txt";
+    private static final String CHECK_POINT_DATA = "graphData.txt";
     private File checkPointFile = null;
 
-    public ExternalConfigurationManager(String path) {
-        this.path = path;
+    public ExternalCheckPointManager() {
+        //Empty constructor
     }
 
     /**
@@ -26,7 +29,7 @@ public class ExternalConfigurationManager {
      */
     public CheckPoint getCheckPoint() throws FileNotFoundException, CheckPointException {
         if(checkPointFile == null)
-            this.checkPointFile = new File(path + CHECKPOINT_FILE_NAME);
+            this.checkPointFile = new File(cpPath + "\\" + CHECKPOINT_FILE);
         if(!checkPointFile.exists())
             throw new FileNotFoundException("CheckPoint file no exists");
         String[] from;
@@ -37,6 +40,19 @@ public class ExternalConfigurationManager {
         }
         checkFileCorruption(from, to);
         return new CheckPoint(from[1],to[1]);
+    }
+
+    public CheckPoint getFileData() throws FileNotFoundException{
+        this.checkPointFile = new File(cpPath + "\\" + CHECK_POINT_DATA);
+        CheckPoint cp = new CheckPoint();
+        try (Scanner scannerCP = new Scanner(checkPointFile)) {
+            cp.setGraphName(scannerCP.nextLine());
+            cp.setInputFilePath(scannerCP.nextLine());
+            cp.setFileIndex(Integer.parseInt(scannerCP.nextLine()));
+            cp.setKdTree(Boolean.parseBoolean(scannerCP.nextLine()));
+        }
+        this.checkPointFile = null;
+        return cp;
     }
 
     /**
@@ -56,10 +72,12 @@ public class ExternalConfigurationManager {
      * Delete the check point file
      */
     public void deleteCheckPointFile() {
-        if(checkPointFile == null)
-            this.checkPointFile = new File(path + CHECKPOINT_FILE_NAME);
+        this.checkPointFile = new File(cpPath + "\\" + CHECKPOINT_FILE);
         if(checkPointFile.exists() && checkPointFile.delete())
                 System.out.println("CheckPoint file deleted");
+        this.checkPointFile = new File(cpPath + "\\" + CHECK_POINT_DATA);
+        if(checkPointFile.exists() && checkPointFile.delete())
+            System.out.println("CheckPointData file deleted");
     }
 
     /**
@@ -69,13 +87,26 @@ public class ExternalConfigurationManager {
      */
     public void createCheckPoint(String from, String to) throws IOException{
         if(checkPointFile == null)
-            this.checkPointFile = new File(path + CHECKPOINT_FILE_NAME);
+            this.checkPointFile = new File(cpPath + "\\" + CHECKPOINT_FILE);
         try(
                 FileWriter fw = new FileWriter(checkPointFile);
                 PrintWriter printWriter = new PrintWriter(fw)
         ) {
             printWriter.println("from-" + from);
             printWriter.println("to-" + to);
+        }
+    }
+
+    public void createCheckPointFileData(String inputAddressFile, int sheetIndex, String graphName, boolean useKdTree) throws IOException{
+        this.checkPointFile = new File(cpPath + "\\" + CHECK_POINT_DATA);
+        try(
+                FileWriter fw = new FileWriter(checkPointFile);
+                PrintWriter printWriter = new PrintWriter(fw)
+        ) {
+            printWriter.println(graphName);
+            printWriter.println(inputAddressFile);
+            printWriter.println(sheetIndex);
+            printWriter.println(useKdTree);
         }
     }
 }

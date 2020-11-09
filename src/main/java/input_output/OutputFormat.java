@@ -1,6 +1,11 @@
 package input_output;
 
-import user_interface.MenuState;
+
+import org.beryx.textio.TextTerminal;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public enum OutputFormat {
     EXCEL_FILE_LIST,
@@ -11,14 +16,14 @@ public enum OutputFormat {
         return OutputFormat.values()[choice - 1];
     }
 
-    public static OutputFormat[] getOutputFormatList() {
-        return  OutputFormat.values();
+    public static List<String> getOutputFormatList() {
+        return Arrays.stream(OutputFormat.values()).map(OutputFormat::toString).collect(Collectors.toList());
     }
 
-    public static int printFormats() {
+    public static int printFormats(TextTerminal textTerminal) {
         int count = 0;
         for(OutputFormat elem : OutputFormat.values())
-            System.out.println(++count + " - " + elem);
+            textTerminal.println(++count + " - " + elem);
         return count;
     }
 

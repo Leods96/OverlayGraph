@@ -6,4 +6,8 @@ public class GraphCreationException extends Exception {
         super(message);
     }
 
+    public GraphCreationException () {
+        super();
+    }
+
 }
