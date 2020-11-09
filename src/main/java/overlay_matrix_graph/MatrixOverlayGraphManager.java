@@ -25,19 +25,23 @@ public class MatrixOverlayGraphManager {
     /**
      * This parameter define the use of the angle hint research during the NNR
      */
-    private boolean ANGLE_NEIGHBOURS_HINT = true;
+    private static final boolean ANGLE_NEIGHBOURS_HINT = true;
+    private boolean isAngleNeighboursHint;
 
-    private boolean BEST_PATH_CHOSE_OVER_OVERLAY_ONLY = false;
+    private static final boolean BEST_PATH_CHOSE_OVER_OVERLAY_ONLY = false;
+    private boolean isBestPathOverOverlay;
     /**
      * This threshold represents the maximum allowed distance (in meters) between the nearest neighbour
      * and the other possible neighbours
      */
-    private double NEIGHBOURS_THRESHOLD = 1500;
+    private static final int NEIGHBOURS_THRESHOLD = 1500; //1,5km
+    private int neighboursThreshold;
     /**
      * This threshold represents the maximum allowed distance (in meters) between the overlay point and his
      * neighbours
      */
-    private double THRESHOLD_NEIGHBOUR_DISTANCE = 100000; //100 km
+    private static final int THRESHOLD_NEIGHBOUR_DISTANCE = 100000; //100 km
+    private int thresholdNeighbourDistance;
 
     private MatrixOverlayGraph graph;
     private ExternalCSVDump dump;
@@ -63,12 +67,14 @@ public class MatrixOverlayGraphManager {
     }
 
     public void setParams(ParamsObject po) {
-        if (po == null)
-            return;
-        if(po.isAngleHint() != null) this.ANGLE_NEIGHBOURS_HINT = po.isAngleHint();
-        if(po.isOverlayOnly() != null) this.BEST_PATH_CHOSE_OVER_OVERLAY_ONLY = po.isOverlayOnly();
-        if(po.getNeighbourThreshold() != null) this.NEIGHBOURS_THRESHOLD = po.getNeighbourThreshold();
-        if(po.getNeighbourDistance() != null) this.THRESHOLD_NEIGHBOUR_DISTANCE = po.getNeighbourDistance();
+        this.isAngleNeighboursHint = (po != null && po.isAngleHint() != null) ?
+                po.isAngleHint() : ANGLE_NEIGHBOURS_HINT;
+        this.isBestPathOverOverlay = (po != null && po.isOverlayOnly() != null) ?
+                po.isOverlayOnly() : BEST_PATH_CHOSE_OVER_OVERLAY_ONLY;
+        this.neighboursThreshold = (po != null && po.getNeighbourThreshold() != null) ?
+                po.getNeighbourThreshold() : NEIGHBOURS_THRESHOLD;
+        this.thresholdNeighbourDistance = (po != null && po.getNeighbourDistance() != null) ?
+                po.getNeighbourDistance() : THRESHOLD_NEIGHBOUR_DISTANCE;
         graph.setParams(po);
     }
 
@@ -260,11 +266,11 @@ public class MatrixOverlayGraphManager {
             originNeighbours = new ArrayList<>();
             originNeighbours.add(new NeighbourResponse(fromPoint, 0.0));
         } catch (NodeNotInOverlayGraphException e) {
-            //TODO check why we do the add all if the hint is true?
-            originNeighbours = new ArrayList<>(graph.searchNeighbour(fromPoint));
-            if(ANGLE_NEIGHBOURS_HINT)
-                originNeighbours.addAll(graph.
-                        searchNeighbourWithAngleHint(fromPoint, AngleCalculator.getAngle(fromPoint, toPoint)));
+            if(isAngleNeighboursHint)
+                originNeighbours = new ArrayList<>(graph.searchNeighbourWithAngleHint
+                        (fromPoint, AngleCalculator.getAngle(fromPoint, toPoint)));
+            else
+                originNeighbours = new ArrayList<>(graph.searchNeighbour(fromPoint));
             response.setStartingStep();
         }
         try {
@@ -272,46 +278,57 @@ public class MatrixOverlayGraphManager {
             destinationNeighbours = new ArrayList<>();
             destinationNeighbours.add(new NeighbourResponse(toPoint, 0.0));
         } catch (NodeNotInOverlayGraphException e) {
-            destinationNeighbours = new ArrayList<>(graph.searchNeighbour(toPoint));
-            if(ANGLE_NEIGHBOURS_HINT)
-                destinationNeighbours.addAll(graph.
-                        searchNeighbourWithAngleHint(toPoint, AngleCalculator.getAngle(toPoint, fromPoint)));
+            if(isAngleNeighboursHint)
+                destinationNeighbours = new ArrayList<>(graph.searchNeighbourWithAngleHint
+                        (toPoint, AngleCalculator.getAngle(toPoint, fromPoint)));
+            else
+                destinationNeighbours = new ArrayList<>(graph.searchNeighbour(toPoint));
             response.setFinalStep();
         }
-        if(BEST_PATH_CHOSE_OVER_OVERLAY_ONLY)
-            return neighboursOverlayComputation(response, originNeighbours, destinationNeighbours);
-        else
-            return neighboursTotalComputation(response, originNeighbours, destinationNeighbours);
+        return neighboursOverlayComputation(response, originNeighbours, destinationNeighbours);
     }
 
     /**
-     * Take the two sets of neighbours as input, if there is an intersection between them the computation
-     * will be based on Haversine formula
-     * If there is no intersection between the neighbours the two sets will be filtered with respect to
-     * the first element of each set (representing the nearest neighbour) based on the defined threshold
-     * and then all the possible route are computed with the overlay graph and the best one will be passed
+     * - Take the two sets of neighbours as input
+     * - Sort the neighbours and assign the nearest one to the origin and destination variables,
+     * doing this if the result of the filters is an empty set a result is ensured
+     * - Filter the neighbours sets based on the thresholdNeighbourDistance param
+     * - If there is an intersection between the sets the computation will be based on Haversine formula
+     * - If there is no intersection between the neighbours the two sets will be filtered with respect to
+     * the first element of each set (representing the nearest neighbour) based on neighboursThreshold param
+     * - All the possible routes are computed with the overlay graph and the best one will be passed
      * to the routeComposition()
      * @param response OverlayResponse we are working with
      * @param originNeighbours set of origin's nearest neighbours
      * @param destinationNeighbours set of origin's nearest neighbours
-     * @return An OverlayResponse with all the information of the route
-     * the selected node as part of the OverlayGraph
+     * @return OverlayResponse with all the information of the route and the selected node
+     * as part of the OverlayGraph
      */
     public OverlayResponse neighboursOverlayComputation(OverlayResponse response, List<NeighbourResponse> originNeighbours, List<NeighbourResponse> destinationNeighbours ) {
+        //Sort of the neighbours
+        originNeighbours.sort(Comparator.comparingDouble(NeighbourResponse::getDistance));
+        destinationNeighbours.sort(Comparator.comparingDouble(NeighbourResponse::getDistance));
+        NeighbourResponse origin = originNeighbours.get(0);
+        NeighbourResponse destination = destinationNeighbours.get(0);
+
+        //Filter the neighbours wrt the distance from the overlay point (thresholdNeighbourDistance)
+        originNeighbours = originNeighbours.stream().filter(n -> n.getDistance() < thresholdNeighbourDistance).collect(Collectors.toList());
+        destinationNeighbours = destinationNeighbours.stream().filter(n -> n.getDistance() < thresholdNeighbourDistance).collect(Collectors.toList());
+
         //Check the intersection between the neighbours
         if (checkIntersectionBetweenNeighbours(originNeighbours, destinationNeighbours)) {
                 System.out.println("Neighbours intersection");
                 response.removeOverlayFromResponse();
                 return routeComposition(response, null, null, null);
         }
+
+        //Filter the neighbours wrt the nearest neighbour founded (neighboursThreshold)
+        if(!originNeighbours.isEmpty()) originNeighbours = neighboursFiltering(originNeighbours);
+        if(!destinationNeighbours.isEmpty()) destinationNeighbours = neighboursFiltering(destinationNeighbours);
+
         //Computation of the best overlay path
-        originNeighbours = neighboursFiltering(originNeighbours);
-        destinationNeighbours = neighboursFiltering(destinationNeighbours);
-        NeighbourResponse origin = null;
-        NeighbourResponse destination = null;
         double overlayDistance = Double.MAX_VALUE;
         RouteInfo middlePath = null;
-        System.out.println("Origin neighbours: " + originNeighbours + "\nDestination neighbours: " + destinationNeighbours);
         for(NeighbourResponse n1 : originNeighbours) {
             for (NeighbourResponse n2 : destinationNeighbours) {
                 RouteInfo resp = graph.route(n1.getPoint().getCode(), n2.getPoint().getCode());
@@ -323,14 +340,18 @@ public class MatrixOverlayGraphManager {
                 }
             }
         }
+
+        if(middlePath == null)
+            middlePath = graph.route(origin.getPoint().getCode(), destination.getPoint().getCode());
+
         response.setOriginNeighbour(origin.getPoint());
         response.setDestinationNeighbour(destination.getPoint());
         return routeComposition(response, middlePath, origin.getDistance(), destination.getDistance());
     }
 
-    public OverlayResponse neighboursTotalComputation(OverlayResponse response, List<NeighbourResponse> originNeighbours, List<NeighbourResponse> destinationNeighbours ) {
-        originNeighbours = originNeighbours.stream().filter(n -> n.getDistance() < THRESHOLD_NEIGHBOUR_DISTANCE).collect(Collectors.toList());
-        destinationNeighbours = destinationNeighbours.stream().filter(n -> n.getDistance() < THRESHOLD_NEIGHBOUR_DISTANCE).collect(Collectors.toList());
+    /*public OverlayResponse neighboursTotalComputation(OverlayResponse response, List<NeighbourResponse> originNeighbours, List<NeighbourResponse> destinationNeighbours ) {
+        originNeighbours = originNeighbours.stream().filter(n -> n.getDistance() < thresholdNeighbourDistance).collect(Collectors.toList());
+        destinationNeighbours = destinationNeighbours.stream().filter(n -> n.getDistance() < thresholdNeighbourDistance).collect(Collectors.toList());
 
         if(checkIntersectionBetweenNeighbours(originNeighbours, destinationNeighbours)) {
             System.out.println("Neighbours intersection");
@@ -358,9 +379,11 @@ public class MatrixOverlayGraphManager {
         response.setOriginNeighbour(bestOriginNeighbour.getPoint());
         response.setDestinationNeighbour(bestDestinationNeighbour.getPoint());
         return routeComposition(response, bestRouteInfo, bestOriginNeighbour.getDistance(), bestDestinationNeighbour.getDistance());
-    }
+    }*/
 
     private boolean checkIntersectionBetweenNeighbours(List<NeighbourResponse> originNeighbours, List<NeighbourResponse> destinationNeighbours) {
+        if(originNeighbours.isEmpty() || destinationNeighbours.isEmpty())
+            return false;
         for (Point p : originNeighbours.stream().map(NeighbourResponse::getPoint).collect(Collectors.toList()))
             if (destinationNeighbours.stream().map(NeighbourResponse::getPoint).collect(Collectors.toList()).contains(p))
                 return true;
@@ -373,10 +396,9 @@ public class MatrixOverlayGraphManager {
          * @return A filtered list of points
          */
     private List<NeighbourResponse> neighboursFiltering(List<NeighbourResponse> listOfNeighbours) {
-        listOfNeighbours.sort(Comparator.comparingDouble(NeighbourResponse::getDistance));
         NeighbourResponse nearest = listOfNeighbours.get(0);
         HeartDistance calculator = new HeartDistance();
-        return listOfNeighbours.stream().filter(p -> calculator.calculate(p.getPoint(), nearest.getPoint()) < NEIGHBOURS_THRESHOLD).collect(Collectors.toList());
+        return listOfNeighbours.stream().filter(p -> calculator.calculate(p.getPoint(), nearest.getPoint()) < neighboursThreshold).collect(Collectors.toList());
     }
 
     /**
@@ -398,9 +420,9 @@ public class MatrixOverlayGraphManager {
         if(response.getInitialPath()) {
             response.setDistance(originDistance);
         }
-
-        response.concat(overlayDistance);
-
+        if(response.getMiddlePath()) {
+            response.concat(overlayDistance);
+        }
         if(response.getFinalPath()) {
             response.setDistance(destinationDistance);
         }
@@ -410,6 +432,14 @@ public class MatrixOverlayGraphManager {
     public void printGraph() {
         System.out.println("Our overlay graph is: ");
         graph.print();
+    }
+
+    public void printParams() {
+        System.out.println("ANGLE_NEIGHBOURS_HINT " + isAngleNeighboursHint);
+        System.out.println("BEST_PATH_CHOSE_OVER_OVERLAY_ONLY " + isBestPathOverOverlay);
+        System.out.println("THRESHOLD_NEIGHBOUR_DISTANCE " + thresholdNeighbourDistance);
+        System.out.println("NEIGHBOURS_THRESHOLD " + neighboursThreshold);
+        graph.printParams();
     }
 
 

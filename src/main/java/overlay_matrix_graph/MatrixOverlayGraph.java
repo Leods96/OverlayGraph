@@ -20,11 +20,13 @@ public class MatrixOverlayGraph implements Serializable {
      * This param says if the first split of a KdTree will be done by a latitude split
      * or a longitude split
      */
-    private boolean SPLIT_LATITUDE = true;
+    private static final boolean SPLIT_LATITUDE = true;
+    private boolean splitLatitude;
     /**
      * This param define the number of neighbours for each NN research
      */
-    private int NUMBER_OF_NN = 20;
+    private static final int NUMBER_OF_NN = 20;
+    private int numberNN;
 
     private boolean useKdTree;
 
@@ -55,10 +57,7 @@ public class MatrixOverlayGraph implements Serializable {
         if(useKdTree) {
             kdTreeSupporter = new KdTreeSupporter
                     (graph.values().stream().map(Source::getNodeInfo).collect(Collectors.toList()),
-                    SPLIT_LATITUDE);
-            /*localitySupporter = new LocalityGraph
-                    (graph.values().stream().map(Source::getNodeInfo).collect(Collectors.toList()),
-                    NUMBER_OF_NN);*/
+                    splitLatitude);
         } else {
             linearSupporter = new LinearSupporter(graph.values().stream().map(Source::getNodeInfo)
                     .collect(Collectors.toList()));
@@ -98,31 +97,31 @@ public class MatrixOverlayGraph implements Serializable {
     }*/
 
     public void setParams (ParamsObject po) {
-        if(po == null)
-            return;
-        if(po.isSplitLatitude() != null) this.SPLIT_LATITUDE = po.isSplitLatitude();
-        if(po.getNumberNN() != null) this.NUMBER_OF_NN = po.getNumberNN();
+        this.splitLatitude = (po != null && po.isSplitLatitude() != null) ?
+                po.isSplitLatitude() : SPLIT_LATITUDE;
+        this.numberNN = (po != null && po.getNumberNN() != null) ?
+                po.getNumberNN() : NUMBER_OF_NN;
     }
 
     public List<NeighbourResponse> searchNeighbour(Point p) {
         if(useKdTree)
-            return kdTreeSupporter.searchNeighbours(p, NUMBER_OF_NN);
-        return linearSupporter.searchNeighbours(p, NUMBER_OF_NN);
+            return kdTreeSupporter.searchNeighbours(p, numberNN);
+        return linearSupporter.searchNeighbours(p, numberNN);
     }
 
     public List<NeighbourResponse> searchNeighbourWithAngleHint(Point p, double angle) {
         List<NeighbourResponse> neighbours;
         if (useKdTree)
-            neighbours = kdTreeSupporter.searchNeighbours(p, NUMBER_OF_NN, angle);
+            neighbours = kdTreeSupporter.searchNeighbours(p, numberNN, angle);
         else
-            neighbours = linearSupporter.searchNeighbours(p, NUMBER_OF_NN, angle);
+            neighbours = linearSupporter.searchNeighbours(p, numberNN, angle);
         if (neighbours.isEmpty()) {
             System.out.println("With the angle hint no neighbours have been founded \n " +
                     "The standard approach have been used");
             if (useKdTree)
-                neighbours = kdTreeSupporter.searchNeighbours(p, NUMBER_OF_NN);
+                neighbours = kdTreeSupporter.searchNeighbours(p, numberNN);
             else
-                neighbours = linearSupporter.searchNeighbours(p, NUMBER_OF_NN);
+                neighbours = linearSupporter.searchNeighbours(p, numberNN);
         }
         return neighbours;
     }
@@ -152,6 +151,11 @@ public class MatrixOverlayGraph implements Serializable {
         } catch (IndexOutOfBoundsException e) {
             throw new NodeNotInOverlayGraphException();
         }
+    }
+
+    public void printParams() {
+        System.out.println("NUMBER_OF_NN " + numberNN );
+        System.out.println("SPLIT_LATITUDE " + splitLatitude );
     }
 
 

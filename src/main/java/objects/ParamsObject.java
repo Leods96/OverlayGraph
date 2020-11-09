@@ -6,8 +6,8 @@ public class ParamsObject {
      */
     private Boolean angleHint;
     private Boolean overlayOnly;
-    private Double neighbourThreshold;
-    private Double neighbourDistance;
+    private Integer neighbourThreshold;
+    private Integer neighbourDistance;
     /**
      * Params for the MatrixOverlayGraph
      */
@@ -31,11 +31,11 @@ public class ParamsObject {
         return overlayOnly;
     }
 
-    public Double getNeighbourDistance() {
+    public Integer getNeighbourDistance() {
         return neighbourDistance;
     }
 
-    public Double getNeighbourThreshold() {
+    public Integer getNeighbourThreshold() {
         return neighbourThreshold;
     }
 
@@ -51,11 +51,11 @@ public class ParamsObject {
         this.angleHint = angleHint;
     }
 
-    public void setNeighbourDistance(double neighbourDistance) {
+    public void setNeighbourDistance(int neighbourDistance) {
         this.neighbourDistance = neighbourDistance;
     }
 
-    public void setNeighbourThreshold(double neighbourThreshold) {
+    public void setNeighbourThreshold(int neighbourThreshold) {
         this.neighbourThreshold = neighbourThreshold;
     }
 

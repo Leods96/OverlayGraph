@@ -31,31 +31,22 @@ public interface UtilCLI {
      * @return 0 if the command corresponds to the exit, the command if satisfy the condition
      */
     static int inputParser(int max) {
-        String choice = textIO.newStringInputReader().read("input: ");
+        String choice;
         try {
-            int result = Integer.parseInt(choice);
-            if(max == -1 || (result > 0 && result <= max))
-                return result;
+            choice = textIO.newStringInputReader().read("input: ");
+            try {
+                int result = Integer.parseInt(choice);
+                if(result > 0 && (max == -1 || result <= max))
+                    return result;
+            } catch (Exception e) {
+                if(exitCondition(choice))
+                    return 0;
+            }
         } catch (Exception e) {
-            if(exitCondition(choice))
-                return 0;
+            //Do nothing
         }
         printError("Unacceptable input");
         return inputParser(max);
-    }
-
-    static double inputParserDouble(int max) {
-        String choice = textIO.newStringInputReader().read("input: ");
-        try {
-            double result = Double.parseDouble(choice);
-            if(max == -1 || (result > 0 && result <= max))
-                return result;
-        } catch (Exception e) {
-            if(exitCondition(choice))
-                return 0;
-        }
-        printError("Unacceptable input");
-        return inputParserDouble(max);
     }
 
     /**
@@ -65,13 +56,17 @@ public interface UtilCLI {
      * if the user wants to exit
      */
     static int parseInputYesOrNo() {
-        String choice = textIO.newStringInputReader().read("Choose between yes or no: ");
-        if (choice.compareToIgnoreCase("yes") == 0 || choice.compareToIgnoreCase("y") == 0)
-            return 1;
-        if (choice.compareToIgnoreCase("no") == 0 || choice.compareToIgnoreCase("n") == 0)
-            return -1;
-        if(exitCondition(choice))
-            return 0;
+        try {
+            String choice = textIO.newStringInputReader().read("Choose between yes or no: ");
+            if (choice.compareToIgnoreCase("yes") == 0 || choice.compareToIgnoreCase("y") == 0)
+                return 1;
+            if (choice.compareToIgnoreCase("no") == 0 || choice.compareToIgnoreCase("n") == 0)
+                return -1;
+            if (exitCondition(choice))
+                return 0;
+        } catch (Exception e) {
+            //Do nothing
+        }
         printError("Unacceptable input");
         return parseInputYesOrNo();
     }
@@ -81,5 +76,14 @@ public interface UtilCLI {
         textTerminal.println(message);
         textTerminal.getProperties().setPromptColor(TERMINAL_COLOR);
     }
+
+    static void switchColorMenu(boolean printingMenu) {
+        if(printingMenu)
+            textTerminal.getProperties().setPromptColor(MENU_COLOR);
+        else
+            textTerminal.getProperties().setPromptColor(TERMINAL_COLOR);
+    }
+
+
 
 }

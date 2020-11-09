@@ -153,7 +153,7 @@ public class Controller {
     public void setOSMPath(String path) throws FileNotFoundException, FileInWrongFormatException {
         if (!fileManager.fileExists(path))
             throw new FileNotFoundException();
-        fileManager.fileInCorrectFormat(path, new String[]{"osm","pbf","osm.pbf"}); //only excel file are accepted
+        fileManager.fileInCorrectFormat(path, new String[]{"osm","pbf","osm.pbf"}); //only osm file are accepted
         this.osmPath = path;
     }
 

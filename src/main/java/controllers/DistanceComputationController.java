@@ -88,12 +88,13 @@ public class DistanceComputationController {
     private void loadGraph() throws IOException, ClassNotFoundException{
         if(usingGH) {
             gh = new GraphHopperInstance();
-            gh.preprocessing(null);
+            gh.load();
         } else {
             og = new MatrixOverlayGraphManager();
             og.setGraphPath(graphPath + "\\" + graphName);
             og.loadGraph();
             og.setParams(new ExternalFileManager().readConfigFile());
+            //og.printParams();
         }
     }
 

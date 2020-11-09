@@ -14,28 +14,34 @@ import java.io.IOException;
 import static user_interface.UtilCLI.printError;
 
 public class CLI {
-    static final String TERMINAL_COLOR = "cyan";
+    static final String TERMINAL_COLOR = "white";
     static final String ERROR_COLOR = "red";
+    static final String MENU_COLOR = "cyan";
 
     static final int EXIT = 0;
     static TextIO textIO = TextIoFactory.getTextIO();
-    static TextTerminal textTerminal = TextIoFactory.getTextTerminal();
-
+    static TextTerminal textTerminal = textIO.getTextTerminal();
     static Controller controller;
 
     private MenuState nextState;
+    private boolean printingMenu = false;
 
     public void menu() {
         textTerminal.getProperties().setPromptColor(TERMINAL_COLOR);
         controller = new Controller();
         int choice = 1;
         while(choice != EXIT) {
-            textTerminal.println("\nMENU");
-            textTerminal.println("1 - Compute distances");
-            textTerminal.println("2 - Configuration");
-            textTerminal.println("3 - Overlay-Graph computation");
-            textTerminal.println("4 - Help usage");
+            switchColorMenu();
+            textTerminal.println("\n\n");
+            textTerminal.println("################");
+            textTerminal.println("##### MENU #####");
+            textTerminal.println("################");
+            textTerminal.println("   1 - Compute distances");
+            textTerminal.println("   2 - Configuration");
+            textTerminal.println("   3 - Overlay-Graph management");
+            textTerminal.println("   4 - Help usage");
             textTerminal.println("exit - to close the program");
+            switchColorMenu();
 
             choice = UtilCLI.inputParser(4);
             if(choice != EXIT) {
@@ -65,19 +71,45 @@ public class CLI {
     }
 
     private void print_usage() {
-        //TODO usage...premere un tasto qualsiasi per tornare al menu
+        switchColorMenu();
+        textTerminal.println("\n\n");
+        textTerminal.println("#################");
+        textTerminal.println("##### USAGE #####");
+        textTerminal.println("#################");
+        textTerminal.println("\n* This is a Command Line Interface for the use of the overlay-graph " +
+                "framework \n" +
+                "* This CLI is composed by different menus and is possible to navigate into these menus " +
+                "following the instruction of each of them \n" +
+                "* Depending on the type of menu the possible inputs are: \n" +
+                "\t - Number: to select a choice between a list of actions\n" +
+                "\t - YES/NO: to select a choice between a pair (possible input: y/yes/n/no) \n" +
+                "\t - Path: to specify a file to be read, this must be an absolute path containing" +
+                " also the name of the file and the extension\n" +
+                "\t - the \"exit\" keyword: to close a menu or stop the execution of a process\n" +
+                "* You can find more explaination on the framework use into the documentation\n" +
+                "ENJOY!\n");
+        switchColorMenu();
+        textTerminal.println("Press enter to continue..");
+        textIO.newStringInputReader().withMinLength(0).read();
     }
 
     private void configuration() {
         int choice = 1;
 
         while (choice != EXIT) {
-            textTerminal.println("\n1 - Set-up of the Graph-Hopper graph");
-            textTerminal.println("2 - Overlay-graphs configuration");
-            textTerminal.println("3 - Reset configuration");
-            textTerminal.println("4 - Clean the dumps files");
-            textTerminal.println("exit - Return to home menu");
-            choice = UtilCLI.inputParser(4);
+            switchColorMenu();
+            textTerminal.println("\n\n");
+            textTerminal.println("#########################");
+            textTerminal.println("##### CONFIGURATION #####");
+            textTerminal.println("#########################\n");
+            textTerminal.println("   1  - Set-up of the Graph-Hopper graph");
+            textTerminal.println("   2  - Overlay-graphs configuration");
+            textTerminal.println("   3  - Reset Overlay-graphs configuration");
+            textTerminal.println("   4  - Clean the dumps files");
+            textTerminal.println("   5  - Clean the output files");
+            textTerminal.println("exit  - Return to home menu");
+            switchColorMenu();
+            choice = UtilCLI.inputParser(5);
             if (choice != EXIT)
                 switch(choice) {
                     case 1:
@@ -108,6 +140,14 @@ public class CLI {
                             printError("Problem during the clean of the dumps");
                         }
                         break;
+                    case 5:
+                        try {
+                            ConfigurationCLI.flushOutputs();
+                            textTerminal.println("\nOutputs flushed");
+                        } catch (IOException e) {
+                            printError("Problem during the clean of the outputs");
+                        }
+                        break;
                 }
         }
     }
@@ -115,9 +155,15 @@ public class CLI {
     private void overlay_management() {
         int choice = 1;
         while (choice != EXIT) {
-            textTerminal.println("\n1 - Create new overlay graph");
-            textTerminal.println("2 - Delete graph");
+            switchColorMenu();
+            textTerminal.println("\n\n");
+            textTerminal.println("##############################");
+            textTerminal.println("##### OVERLAY MANAGEMENT #####");
+            textTerminal.println("##############################\n");
+            textTerminal.println("   1 - Create new overlay graph");
+            textTerminal.println("   2 - Delete graph");
             textTerminal.println("exit - Return to home menu");
+            switchColorMenu();
             choice = UtilCLI.inputParser(2);
 
             if (choice != EXIT)
@@ -165,5 +211,10 @@ public class CLI {
             return;
         }
         textTerminal.println("\nComputation completed! The final result has been written to the file");
+    }
+
+    private void switchColorMenu() {
+        this.printingMenu = !this.printingMenu;
+        UtilCLI.switchColorMenu(printingMenu);
     }
 }

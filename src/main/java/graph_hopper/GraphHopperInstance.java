@@ -7,6 +7,7 @@ import com.graphhopper.PathWrapper;
 import com.graphhopper.routing.util.EncodingManager;
 import objects.Point;
 
+import static controllers.Controller.ghPath;
 import static controllers.Controller.graphPath;
 
 public class GraphHopperInstance {
@@ -27,6 +28,12 @@ public class GraphHopperInstance {
         System.out.println("Creation or Load of the graph hopper graph..");
         graphHopper.importOrLoad();
         System.out.println("graph hopper ready");
+    }
+
+    public void load() {
+        graphHopper = new GraphHopper()
+        .setEncodingManager(new EncodingManager(VEHICLE)).forServer();
+        graphHopper.load(ghPath);
     }
 
     /**

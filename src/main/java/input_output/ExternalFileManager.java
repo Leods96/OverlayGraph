@@ -109,7 +109,7 @@ public class ExternalFileManager {
 
         obj.put("angleHint", po.isAngleHint());
         obj.put("overlayOnly", po.isOverlayOnly());
-        obj.put("neighbourThreshold", po.getNeighbourThreshold());
+        obj.put("thresholdNeighbour", po.getNeighbourThreshold());
         obj.put("neighbourDistance", po.getNeighbourDistance());
         obj.put("NumberNN", po.getNumberNN());
         obj.put("splitOnLatitude", po.isSplitLatitude());
@@ -132,8 +132,8 @@ public class ExternalFileManager {
 
         try { po.setAngleHint((Boolean) obj.get("angleHint")); } catch (Exception e) {}
         try { po.setOverlayOnly((Boolean)obj.get("overlayOnly")); } catch (Exception e) {}
-        try { po.setNeighbourThreshold((Double)obj.get("neighbourThreshold")); } catch (Exception e) {}
-        try { po.setNeighbourDistance((Double)obj.get("neighbourDistance")); } catch (Exception e) {}
+        try { po.setNeighbourThreshold((Integer) obj.get("thresholdNeighbour")); } catch (Exception e) {}
+        try { po.setNeighbourDistance((Integer) obj.get("neighbourDistance")); } catch (Exception e) {}
         try { po.setNumberNN((Integer)obj.get("NumberNN")); } catch (Exception e) {}
         try { po.setSplitLatitude((Boolean)obj.get("splitOnLatitude")); } catch (Exception e) {}
 

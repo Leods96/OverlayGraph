@@ -6,6 +6,7 @@ import objects.ParamsObject;
 import java.io.IOException;
 
 import static controllers.Controller.dumpsPath;
+import static controllers.Controller.outputPath;
 import static user_interface.CLI.*;
 import static user_interface.UtilCLI.*;
 
@@ -21,7 +22,7 @@ public interface ConfigurationCLI {
             try {
                 controller.setOSMPath(input);
             } catch (Exception e) {
-                printError(e.getMessage());
+                printError("Unacceptable OSM input file");
                 condition = false;
             }
         } while (!condition);
@@ -35,25 +36,29 @@ public interface ConfigurationCLI {
             controller.graphHopperGraphCreation();
         } catch (Exception e) {
             printError("Problem in the creation of graph-hopper");
-            e.printStackTrace();
             return;
         }
         textTerminal.println("\nGraph-Hopper graph created and saved");
     }
 
     static ParamsObject graphParamsSetup(ParamsObject po) {
-        textTerminal.println("\n1 - set ANGLE_NEIGHBOURS_HINT \n" +
-                "2 - set BEST_PATH_CHOSE_OVER_OVERLAY_ONLY \n" +
-                "3 - NEIGHBOURS_THRESHOLD \n" +
-                "4 - THRESHOLD_NEIGHBOUR_DISTANCE \n" +
-                "5 - SPLIT_LATITUDE\n" +
-                "6 - NUMBER_OF_NN\n" +
+        textTerminal.println("\n\n");
+        textTerminal.println("######################");
+        textTerminal.println("##### PARAMETERS #####");
+        textTerminal.println("######################\n");
+        textTerminal.println("   1 - ANGLE_NEIGHBOURS_HINT \n" +
+                "   2 - BEST_PATH_CHOSE_OVER_OVERLAY_ONLY \n" +
+                "   3 - NEIGHBOURS_THRESHOLD \n" +
+                "   4 - THRESHOLD_NEIGHBOUR_DISTANCE \n" +
+                "   5 - SPLIT_LATITUDE\n" +
+                "   6 - NUMBER_OF_NN\n" +
                 "exit - To save the configuration and return to previous menu");
         int choice = inputParser(6);
         if(choice == EXIT)
             return po;
         switch (choice) {
             case 1:
+                textTerminal.println("\n######################");
                 textTerminal.println("\nActivation of the ANGLE_NEIGHBOURS_HINT parameter \n" +
                         "This parameter define the use of the angle hint research during the NNR \n" +
                         "yes - will activate it \n" +
@@ -63,6 +68,7 @@ public interface ConfigurationCLI {
                     po.setAngleHint(a == 1);
                 break;
             case 2:
+                textTerminal.println("\n######################");
                 textTerminal.println("\nActivation of the BEST_PATH_CHOSE_OVER_OVERLAY_ONLY parameter \n" +
                         "yes - will activate it \n" +
                         "no - will deactivate it");
@@ -71,22 +77,25 @@ public interface ConfigurationCLI {
                     po.setOverlayOnly(b == 1);
                 break;
             case 3:
+                textTerminal.println("\n######################");
                 textTerminal.println("\nTuning of the NEIGHBOURS_THRESHOLD parameter \n" +
                         "This threshold represents the maximum allowed distance (in meters) " +
                         "between the nearest neighbour and the other possible neighbours");
-                double c = inputParserDouble(-1);
+                int c = inputParser(-1);
                 if (c != EXIT)
                     po.setNeighbourThreshold(c);
                 break;
             case 4:
+                textTerminal.println("\n######################");
                 textTerminal.println("\nTuning of the THRESHOLD_NEIGHBOUR_DISTANCE parameter \n" +
                         "This threshold represents the maximum allowed distance (in meters) between the" +
                         " overlay point and his neighbours");
-                double d = inputParserDouble(-1);
+                int d = inputParser(-1);
                 if (d != EXIT)
-                    po.setNeighbourThreshold(d);
+                    po.setNeighbourDistance(d);
                 break;
             case 5:
+                textTerminal.println("\n######################");
                 textTerminal.println("\nChoose of the SPLIT_LATITUDE parameter \n" +
                         "This params says if the first split of a KdTree will be done by a latitude split\n" +
                         "or a longitude split" +
@@ -97,6 +106,7 @@ public interface ConfigurationCLI {
                     po.setSplitLatitude(e == 1);
                 break;
             case 6:
+                textTerminal.println("\n######################");
                 textTerminal.println("\nTuning of the NUMBER_OF_NN parameter \n" +
                         "This param defines the number of neighbours for each NN research");
                 int f = inputParser(-1);
@@ -112,5 +122,8 @@ public interface ConfigurationCLI {
         new ExternalFileManager().deleteInnerFiles(dumpsPath);
     }
 
+    static void flushOutputs() throws IOException {
+        new ExternalFileManager().deleteInnerFiles(outputPath);
+    }
 
 }
